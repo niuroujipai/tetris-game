@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b16" />
 <!-- App 资源版本号：每发布一次新版本把它 +1（发布流程见 HBuilder打包/使用说明.md）
      启动壳与 App 内更新都靠这个标记判断新旧，平时只需改这一处 -->
-<meta name="app-version" content="4" />
+<meta name="app-version" content="5" />
 <title>俄罗斯方块 · 高端版</title>
 <style>
 /* =========================================================================
@@ -495,7 +495,10 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 }
 @keyframes chipIn{ from{ opacity:0; transform:translate(-50%,10px); } to{ opacity:1; transform:translate(-50%,0); } }
 
-/* ---------- 10. 游戏内顶部条 ---------- */
+/* ---------- 10. 游戏界面顶部（开关 + 游戏信息条） ---------- */
+.game-top{ flex:0 0 auto; display:flex; flex-direction:column; gap:6px; }
+.game-top .toggles{ justify-content:center; gap:6px; }
+.game-top .toggle{ font-size:11px; padding:5px 11px; }
 .gamebar{
   flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:8px;
   background:var(--panel); border:1px solid var(--panel-line);
@@ -506,6 +509,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 .gb-best{ font-size:11px; color:var(--muted); white-space:nowrap; }
 .gb-best b{ color:var(--gold); font-family:ui-monospace,Consolas,monospace; }
 .gb-btns{ display:flex; gap:6px; flex:0 0 auto; }
+.set-row-plain{ display:block; }
 
 /* ---------- 11. 模式选择 ---------- */
 .mode-head{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
@@ -529,16 +533,23 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
 <div id="app">
 
-  <!-- ===== 游戏中顶部条：模式 + 本模式最高分 + 三个操作键 ===== -->
-  <header class="gamebar" id="gameBar">
-    <div class="gb-left">
-      <span class="gb-mode" id="mState">待选择</span>
-      <span class="gb-best">最高分 <b id="mBest">0</b></span>
+  <!-- ===== 游戏界面顶部：三个开关 + 模式信息 + 操作键 ===== -->
+  <header class="game-top" id="gameBar">
+    <div class="toggles">
+      <button class="toggle" id="btnGhost" type="button" title="开关半透明落点提示">幽灵落点</button>
+      <button class="toggle" id="btnSound" type="button" title="开关音效">音效</button>
+      <button class="toggle" id="btnTouch" type="button" title="手指滑屏操作：开启后下方普通按键隐藏，改为在棋盘上滑动操作">虚拟按键</button>
     </div>
-    <div class="gb-btns">
-      <button class="icon-btn" id="mBtnPause" type="button" title="暂停 / 继续">❚❚</button>
-      <button class="icon-btn" id="mBtnStart" type="button" title="重新开始">↻</button>
-      <button class="icon-btn" id="mBtnMenu" type="button" title="退出 / 返回主页">⌂</button>
+    <div class="gamebar">
+      <div class="gb-left">
+        <span class="gb-mode" id="mState">待选择</span>
+        <span class="gb-best">最高分 <b id="mBest">0</b></span>
+      </div>
+      <div class="gb-btns">
+        <button class="icon-btn" id="mBtnPause" type="button" title="暂停 / 继续">❚❚</button>
+        <button class="icon-btn" id="mBtnStart" type="button" title="重新开始">↻</button>
+        <button class="icon-btn" id="mBtnMenu" type="button" title="退出 / 返回主页">⌂</button>
+      </div>
     </div>
   </header>
 
@@ -680,17 +691,19 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
             </div>
 
             <div class="set-list">
-              <div class="set-row">
-                <div class="set-info"><b>幽灵落点</b><span>在落点位置显示半透明提示</span></div>
-                <button class="switch" id="btnGhost" type="button" aria-label="幽灵落点"><i></i></button>
+              <div class="set-row set-row-plain">
+                <div class="set-info">
+                  <b>操作开关在游戏界面顶部</b>
+                  <span>幽灵落点 / 音效 / 虚拟按键 三个开关已经放回游戏界面顶部，
+                    开始游戏后可以直接切换，不用回到这里。</span>
+                </div>
               </div>
-              <div class="set-row">
-                <div class="set-info"><b>音效</b><span>移动 / 旋转 / 落地 / 消行音效</span></div>
-                <button class="switch" id="btnSound" type="button" aria-label="音效"><i></i></button>
-              </div>
-              <div class="set-row">
-                <div class="set-info"><b>虚拟按键</b><span>开启后隐藏下方按键，改为手指在棋盘上滑动操作</span></div>
-                <button class="switch" id="btnTouch" type="button" aria-label="虚拟按键"><i></i></button>
+              <div class="set-row set-row-plain">
+                <div class="set-info">
+                  <b>手机操作说明</b>
+                  <span>默认用下方按键操作；打开「虚拟按键」后按键隐藏，改为手指在棋盘上操作：
+                    左右滑动移动 · 向下滑动加速下落 · 连续下滑两次直接落底 · 点击 / 上滑旋转。</span>
+                </div>
               </div>
             </div>
 
@@ -2740,22 +2753,35 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   /** 检查更新页里的状态文字 */
   function setUpdInfo(text) { setText(el.updInfo, text); }
 
-  /** 安全覆盖固定路径上的游戏文件 */
+  /**
+   * 安全覆盖固定路径上的游戏文件。
+   * 注意：目标文件已存在时 moveTo 会直接失败（这正是「第二次更新必定失败」的原因），
+   * 所以必须先删掉旧的 game.html，再把新文件移过去。
+   */
   function installDownloadedFile(entry, ver) {
-    const fail = function () { setUpdInfo('更新失败，请稍后重试'); };
+    const fail = function (why) {
+      setUpdInfo('安装失败：' + (why || '无法写入游戏文件') +
+        '\n（这是旧版本的一个缺陷，重新安装一次 App 后即可正常更新）');
+    };
     plus.io.resolveLocalFileSystemURL('_doc/tetris/', function (dir) {
-      entry.moveTo(dir, 'game.html', function () {
-        // 记下已热更新到的版本号：启动壳靠它决定加载「自带的」还是「热更新的」那份
-        try { plus.storage.setItem('tetris.localver', String(ver)); } catch (e) {}
-        // 更新前先把当前存档备份一次，确保换加载路径后数据可恢复
-        backupSave();
-        setUpdInfo('更新完成，正在重启…');
-        setTimeout(function () {
-          alert('更新完成，App 将自动重启');
-          plus.runtime.restart();
-        }, 300);
-      }, fail);
-    }, fail);
+      const doMove = function () {
+        entry.moveTo(dir, 'game.html', function () {
+          // 记下已热更新到的版本号：启动壳靠它决定加载「自带的」还是「热更新的」那份
+          try { plus.storage.setItem('tetris.localver', String(ver)); } catch (e) {}
+          // 更新前先把当前存档备份一次，确保换加载路径后数据可恢复
+          backupSave();
+          setUpdInfo('更新完成，正在重启…');
+          setTimeout(function () {
+            alert('更新完成，App 将自动重启');
+            plus.runtime.restart();
+          }, 300);
+        }, function () { fail('写入 game.html 失败'); });
+      };
+      // 先删旧文件；不存在就直接移动
+      plus.io.resolveLocalFileSystemURL('_doc/tetris/game.html', function (oldEntry) {
+        oldEntry.remove(doMove, function () { fail('无法删除旧版本文件'); });
+      }, doMove);
+    }, function () { fail('找不到 _doc/tetris 目录'); });
   }
 
   /** 删除一个文件（不存在或失败都当成功处理） */
@@ -2766,46 +2792,58 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   }
 
   /** 从某一个地址下载并校验；任何一步不通过就清掉临时文件并回调 onFail 去试下一个地址 */
-  function downloadAndVerify(url, info, onFail) {
+  function downloadAndVerify(url, info, onFail, tag) {
     // 每次用不同的临时文件名，避免「文件已存在」导致下载失败
     const tmp = '_doc/tetris/game.tmp' + Date.now() + '.html';
     plus.downloader.createDownload(url, { filename: tmp }, function (t, status) {
       const saved = (t && t.filename) ? t.filename : tmp;
-      const fail = function () { removeFileQuietly(saved, onFail); };
-      if (status !== 200 || !t.filename) { fail(); return; }
+      const fail = function (why) {
+        lastUpdErr = why + (tag ? '（' + tag + '）' : '');
+        removeFileQuietly(saved, onFail);
+      };
+      if (status !== 200 || !t.filename) { fail('下载失败 HTTP ' + status); return; }
       plus.io.resolveLocalFileSystemURL(saved, function (entry) {
         entry.file(function (file) {
           // 校验 1：文件大小与远端声明一致（防下载中断 / 防拿到旧缓存）
-          if (info.size && file.size !== parseInt(info.size, 10)) { fail(); return; }
+          if (info.size && file.size !== parseInt(info.size, 10)) {
+            fail('文件大小不符：期望 ' + info.size + '，实际 ' + file.size); return;
+          }
           const reader = new plus.io.FileReader();
           reader.onloadend = function (evt) {
             const text = evt.target.result || '';
             // 校验 2：内容里确实带着目标版本号
-            if (text.indexOf('name="app-version" content="' + info.version + '"') < 0) { fail(); return; }
+            if (text.indexOf('name="app-version" content="' + info.version + '"') < 0) {
+              fail('下载到的不是 v' + info.version + ' 的文件'); return;
+            }
             installDownloadedFile(entry, info.version);
           };
-          reader.onerror = fail;
+          reader.onerror = function () { fail('读取下载文件失败'); };
           reader.readAsText(file, 'utf-8');
-        }, fail);
-      }, fail);
+        }, function () { fail('读取下载文件失败'); });
+      }, function () { fail('找不到已下载的文件'); });
     }).start();
   }
+
+  let lastUpdErr = '';   // 最近一次更新失败的原因，用于显示给玩家
 
   /** 下载新版本 → 校验 → 覆盖固定路径上的游戏文件 → 重启 App（失败自动换镜像重试） */
   function applyAppUpdate(info) {
     if (!plus.downloader || !plus.io) { setUpdInfo('当前环境不支持自动更新'); return; }
     if (el.btnDoUpdate) { el.btnDoUpdate.disabled = true; el.btnDoUpdate.textContent = '正在下载更新…'; }
     setUpdInfo('正在下载新版本 v' + info.version + '…');
+    lastUpdErr = '';
 
     const urls = buildUpdCandidates(info.url);
     let idx = 0;
     (function tryNext() {
       if (idx >= urls.length) {
-        setUpdInfo('更新失败，请稍后重试');
+        setUpdInfo('更新失败：' + (lastUpdErr || '网络或文件问题') +
+          '\n可稍后重试；若反复失败，让作者重新打包 App 即可');
         if (el.btnDoUpdate) { el.btnDoUpdate.disabled = false; el.btnDoUpdate.textContent = '重试更新'; }
         return;
       }
-      downloadAndVerify(urls[idx++], info, tryNext);
+      const n = idx + 1;
+      downloadAndVerify(urls[idx++], info, tryNext, '线路' + n);
     })();
   }
 
