@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b16" />
 <!-- App 资源版本号：每发布一次新版本把它 +1（发布流程见 HBuilder打包/使用说明.md）
      启动壳与 App 内更新都靠这个标记判断新旧，平时只需改这一处 -->
-<meta name="app-version" content="6" />
+<meta name="app-version" content="7" />
 <title>俄罗斯方块 · 高端版</title>
 <style>
 /* =========================================================================
@@ -308,6 +308,7 @@ body.mobile.touch-on .touch-controls{ display:none; }
 .mode-card:nth-child(2) .mc-icon{ color:#7ee0ff; }
 .mode-card:nth-child(3) .mc-icon{ color:#c084fc; }
 .mode-card:nth-child(4) .mc-icon{ color:var(--gold); }
+.mode-card:nth-child(5) .mc-icon{ color:#ff8f8f; }
 .mc-name{ font-size:14px; font-weight:700; }
 .mc-desc{ font-size:11px; color:var(--muted); line-height:1.45; }
 .mc-best{ font-size:10.5px; color:var(--muted); margin-top:2px; }
@@ -576,6 +577,13 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
                 <span class="mc-best">最高分 <b>0</b></span>
                 <span class="mc-save hidden">⏱ 有存档</span>
               </button>
+              <button class="mode-card" data-mode="speed" type="button">
+                <span class="mc-icon">⚡</span>
+                <span class="mc-name">极速模式</span>
+                <span class="mc-desc">开局就是普通 11 级的速度，极限操作</span>
+                <span class="mc-best">最高分 <b>0</b></span>
+                <span class="mc-save hidden">⏱ 有存档</span>
+              </button>
               <button class="mode-card" data-mode="m3" type="button">
                 <span class="mc-icon">3′</span>
                 <span class="mc-name">3 分钟极速</span>
@@ -828,14 +836,16 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   const PANEL_W = 238;          // 桌面端右侧信息面板宽度（与 CSS .panel 一致）
   const STAGE_GAP = 16;         // 棋盘区与面板之间的间距（与 CSS .stage 的 gap 一致）
 
-  // 四种模式：经典无尽 + 三档限时
+  // 五种模式：经典无尽 + 极速 + 三档限时
   const MODES = {
     classic: { key: 'classic', name: '经典无尽', seconds: 0 },
+    // 极速模式：等级 1 直接按「普通模式 11 级」的速度下落（speedOffset = 10）
+    speed:   { key: 'speed',   name: '极速模式', seconds: 0, speedOffset: 10 },
     m3:      { key: 'm3',      name: '3 分钟极速', seconds: 180 },
     m5:      { key: 'm5',      name: '5 分钟标准', seconds: 300 },
     m10:     { key: 'm10',     name: '10 分钟超长', seconds: 600 }
   };
-  const MODE_ORDER = ['classic', 'm3', 'm5', 'm10'];   // 界面展示顺序
+  const MODE_ORDER = ['classic', 'speed', 'm3', 'm5', 'm10'];   // 界面展示顺序
 
   // 7 种方块配色（通透、区分度高）
   const COLORS = {
@@ -997,7 +1007,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   let score = 0;                // 本局得分
   let lines = 0;                // 本局消除行数
   let level = 1;                // 当前等级
-  let bestMap = { classic: 0, m3: 0, m5: 0, m10: 0 };  // 各模式独立的最高分
+  let bestMap = { classic: 0, speed: 0, m3: 0, m5: 0, m10: 0 };  // 各模式独立的最高分
   let timerRemain = 0;          // 限时模式剩余毫秒
 
   let dropAcc = 0;              // 下落计时累加器
@@ -1425,9 +1435,11 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     return true;
   }
 
-  /** 当前等级对应的自动下落间隔（等级越高越快，最快 100ms） */
+  /** 当前等级对应的自动下落间隔（等级越高越快，最快 100ms）
+   *  极速模式带 speedOffset：等级 1 就按普通模式 11 级的速度来（1000 - 10×70 = 300ms） */
   function dropInterval() {
-    return Math.max(MIN_DROP_MS, 1000 - (level - 1) * 70);
+    const offset = (mode && mode.speedOffset) ? mode.speedOffset : 0;
+    return Math.max(MIN_DROP_MS, 1000 - (level - 1 + offset) * 70);
   }
 
   /** 等级倍率：等级越高分数有轻微加成 */
@@ -2596,7 +2608,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
    * 这里把它迁移到默认模式「经典无尽」，其余模式从 0 开始。
    */
   function loadBests() {
-    const map = { classic: 0, m3: 0, m5: 0, m10: 0 };
+    const map = { classic: 0, speed: 0, m3: 0, m5: 0, m10: 0 };
     try {
       const raw = localStorage.getItem(BEST_KEY);
       if (raw) {
@@ -2652,7 +2664,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   const SAVE_FILE = '_doc/tetris/save.json';
   const SAVE_KEYS = [
     'tetris.best.v2', 'tetris.best.v1', 'tetris.settings.v1',
-    'tetris.save.classic', 'tetris.save.m3', 'tetris.save.m5', 'tetris.save.m10'
+    'tetris.save.classic', 'tetris.save.speed', 'tetris.save.m3', 'tetris.save.m5', 'tetris.save.m10'
   ];
 
   function hasPlusIO() { return !!(window.plus && plus.io); }

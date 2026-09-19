@@ -1,6 +1,6 @@
 {
-  "version": 6,
+  "version": 7,
   "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
-  "size": 121340,
-  "note": "开关移回游戏界面顶部；设置页精简；修复热更新覆盖失败"
+  "size": 122255,
+  "note": "新增极速模式（1级=普通11级速度）"
 }
