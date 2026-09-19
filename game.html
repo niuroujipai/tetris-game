@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b16" />
 <!-- App 资源版本号：每发布一次新版本把它 +1（发布流程见 HBuilder打包/使用说明.md）
      启动壳与 App 内更新都靠这个标记判断新旧，平时只需改这一处 -->
-<meta name="app-version" content="2" />
+<meta name="app-version" content="3" />
 <title>俄罗斯方块 · 高端版</title>
 <style>
 /* =========================================================================
@@ -53,7 +53,7 @@ button:disabled{ cursor:not-allowed; opacity:.42; }
   position:relative;
   display:flex; flex-direction:column;
   height:100vh; height:100dvh;
-  max-width:1400px; margin:0 auto;
+  max-width:560px; margin:0 auto;   /* 手机端为主：桌面打开也按窄屏居中显示 */
   padding:10px 12px 12px;
   gap:10px;
 }
@@ -397,38 +397,89 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 }
 .app-update-chip:disabled{ opacity:.75; }
 @keyframes chipIn{ from{ opacity:0; transform:translate(-50%,10px); } to{ opacity:1; transform:translate(-50%,0); } }
+
+/* ---------- 9. 主页 ---------- */
+.home-card{ text-align:center; }
+.home-logo{
+  width:56px; height:56px; margin:2px auto 12px; border-radius:16px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 0 26px rgba(76,201,240,.5), inset 0 0 14px rgba(255,255,255,.35);
+}
+.home-title{ margin:0; font-size:26px; letter-spacing:4px; }
+.home-sub{ margin:6px 0 18px; font-size:12px; color:var(--muted); letter-spacing:1px; }
+.home-btn{
+  display:block; width:100%; padding:15px 16px; margin-bottom:10px;
+  border-radius:14px; border:1px solid var(--panel-line);
+  background:rgba(255,255,255,.05); color:var(--text);
+  font-size:16px; font-weight:700; letter-spacing:2px;
+  transition:.16s ease;
+}
+.home-btn:hover{ transform:translateY(-1px); }
+.home-btn.primary{
+  background:linear-gradient(135deg,var(--accent),#5b8cff); color:#05131f;
+  border-color:transparent; box-shadow:0 8px 22px rgba(76,201,240,.32);
+}
+.home-btn .hb-main{ display:block; }
+.home-btn .hb-sub{ display:block; font-size:11px; font-weight:400; letter-spacing:0; opacity:.85; margin-top:3px; }
+.home-bests{
+  display:grid; grid-template-columns:1fr 1fr; gap:6px;
+  margin:14px 0 12px;
+}
+.home-bests div{
+  background:rgba(255,255,255,.04); border:1px solid var(--panel-line);
+  border-radius:9px; padding:6px 4px; font-size:11px; color:var(--muted);
+}
+.home-bests b{ display:block; color:var(--gold); font-size:14px; margin-top:2px;
+  font-family:ui-monospace,Consolas,monospace; }
+.home-tip{ font-size:11px; color:var(--muted); line-height:1.7; margin-top:10px; }
+.home-card .toggles{ justify-content:center; margin-top:14px; }
+
+/* ---------- 10. 游戏内顶部条 ---------- */
+.gamebar{
+  flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  background:var(--panel); border:1px solid var(--panel-line);
+  border-radius:12px; padding:6px 8px;
+}
+.gb-left{ display:flex; align-items:baseline; gap:8px; min-width:0; }
+.gb-mode{ font-size:14px; font-weight:700; color:var(--text); white-space:nowrap; }
+.gb-best{ font-size:11px; color:var(--muted); white-space:nowrap; }
+.gb-best b{ color:var(--gold); font-family:ui-monospace,Consolas,monospace; }
+.gb-btns{ display:flex; gap:6px; flex:0 0 auto; }
+
+/* ---------- 11. 模式选择 ---------- */
+.mode-head{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.mode-head .mode-title{ margin:0; }
+.mini-btn{
+  flex:0 0 auto; padding:6px 10px; border-radius:9px; font-size:12px;
+  border:1px solid var(--panel-line); background:rgba(255,255,255,.05); color:var(--muted);
+}
+.mini-btn:hover{ color:var(--text); }
+.mc-save{
+  align-self:flex-start; margin-top:3px; font-size:10px; font-weight:700;
+  color:#05131f; background:linear-gradient(135deg,#4cc9f0,#7ee0ff);
+  padding:1px 7px; border-radius:99px;
+}
+/* 退出确认有三个按钮：两个一行，第三个换行占满，避免挤在一起 */
+#confirmBtns{ flex-wrap:wrap; }
+#confirmBtns .btn{ flex:1 1 45%; min-width:120px; }
 </style>
 </head>
 <body>
 
 <div id="app">
 
-  <!-- ===== 顶栏：标题 + 功能开关 ===== -->
-  <header class="topbar">
-    <div class="brand">
-      <span class="logo"></span>
-      <h1>俄罗斯方块</h1>
-      <span class="ver">高端版</span>
+  <!-- ===== 游戏中顶部条：模式 + 本模式最高分 + 三个操作键 ===== -->
+  <header class="gamebar" id="gameBar">
+    <div class="gb-left">
+      <span class="gb-mode" id="mState">待选择</span>
+      <span class="gb-best">最高分 <b id="mBest">0</b></span>
     </div>
-    <div class="toggles">
-      <button class="toggle" id="btnGhost" type="button" title="开关半透明落点提示">幽灵落点</button>
-      <button class="toggle" id="btnSound" type="button" title="开关音效">音效</button>
-      <button class="toggle" id="btnTouch" type="button" title="手指滑屏操作：开启后下方普通按键隐藏，改为在棋盘上滑动操作">虚拟按键</button>
+    <div class="gb-btns">
+      <button class="icon-btn" id="mBtnPause" type="button" title="暂停 / 继续">❚❚</button>
+      <button class="icon-btn" id="mBtnStart" type="button" title="重新开始">↻</button>
+      <button class="icon-btn" id="mBtnMenu" type="button" title="退出 / 返回主页">⌂</button>
     </div>
   </header>
-
-  <!-- ===== 手机端顶部状态条（桌面端隐藏）：得分/行数/等级/倒计时已移到棋盘右侧栏 ===== -->
-  <div class="hud-mobile" id="hudMobile">
-    <div class="mh-row mh-sub">
-      <div class="mh-best">本模式最高分 <b id="mBest">0</b></div>
-      <div class="mh-state" id="mState">待选择</div>
-      <div class="mh-btns">
-        <button class="icon-btn" id="mBtnPause" type="button" title="暂停 / 继续">❚❚</button>
-        <button class="icon-btn" id="mBtnStart" type="button" title="重新开始">↻</button>
-        <button class="icon-btn" id="mBtnMenu" type="button" title="返回模式选择">☰</button>
-      </div>
-    </div>
-  </div>
 
   <!-- ===== 主舞台：棋盘 + 桌面端信息面板 ===== -->
   <main class="stage">
@@ -439,33 +490,40 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
         <!-- 模式选择弹窗（开局必选） -->
         <div class="overlay" id="overlayMode">
           <div class="overlay-card">
-            <h2 class="mode-title">选择游戏模式</h2>
+            <div class="mode-head">
+              <button class="mini-btn" id="btnModeBack" type="button">‹ 主页</button>
+              <h2 class="mode-title">选择游戏模式</h2>
+            </div>
             <p class="mode-sub">选择后立即开始游戏 · 限时模式倒计时同步启动<br />
-              各模式最高分独立记录，显示在下方卡片里</p>
+              各模式最高分独立记录 · 有存档的模式可以继续上次的对局</p>
             <div class="mode-grid">
               <button class="mode-card" data-mode="classic" type="button">
                 <span class="mc-icon">∞</span>
                 <span class="mc-name">经典无尽</span>
                 <span class="mc-desc">无时间限制，方块堆叠封顶才结束</span>
                 <span class="mc-best">最高分 <b>0</b></span>
+                <span class="mc-save hidden">⏱ 有存档</span>
               </button>
               <button class="mode-card" data-mode="m3" type="button">
                 <span class="mc-icon">3′</span>
                 <span class="mc-name">3 分钟极速</span>
                 <span class="mc-desc">短时间高强度，抢分节奏极快</span>
                 <span class="mc-best">最高分 <b>0</b></span>
+                <span class="mc-save hidden">⏱ 有存档</span>
               </button>
               <button class="mode-card" data-mode="m5" type="button">
                 <span class="mc-icon">5′</span>
                 <span class="mc-name">5 分钟标准</span>
                 <span class="mc-desc">最平衡的限时对局，攻守兼备</span>
                 <span class="mc-best">最高分 <b>0</b></span>
+                <span class="mc-save hidden">⏱ 有存档</span>
               </button>
               <button class="mode-card" data-mode="m10" type="button">
                 <span class="mc-icon">10′</span>
                 <span class="mc-name">10 分钟超长</span>
                 <span class="mc-desc">耐力考验，等级能推到很高</span>
                 <span class="mc-best">最高分 <b>0</b></span>
+                <span class="mc-save hidden">⏱ 有存档</span>
               </button>
             </div>
             <div class="mode-foot">
@@ -481,13 +539,14 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
         <div class="overlay hidden" id="overlayPause">
           <div class="overlay-card">
             <div class="result-title">已暂停</div>
-            <p class="tip" id="pauseTip">倒计时已冻结，点击继续回到游戏。</p>
+            <p class="tip" id="pauseTip">倒计时已冻结，点继续回到游戏。</p>
             <div class="result-btns">
               <button class="btn primary" id="btnResume" type="button">继续游戏</button>
-              <button class="btn" id="btnRestartPause" type="button">重新开始</button>
+              <button class="btn" id="btnSaveQuitPause" type="button">保存并退出</button>
             </div>
             <div class="result-btns" style="margin-top:9px">
-              <button class="btn" id="btnMenuPause" type="button">返回模式选择</button>
+              <button class="btn" id="btnRestartPause" type="button">重新开始</button>
+              <button class="btn danger" id="btnMenuPause" type="button">退出到模式选择</button>
             </div>
           </div>
         </div>
@@ -504,22 +563,64 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
             </div>
             <div class="result-best" id="rBest">本模式最高分：0</div>
             <div class="result-btns">
-              <button class="btn primary" id="btnRestart" type="button">重新开始</button>
+              <button class="btn primary" id="btnRestart" type="button">再来一局</button>
               <button class="btn" id="btnMenuOver" type="button">返回模式选择</button>
+            </div>
+            <div class="result-btns" style="margin-top:9px">
+              <button class="btn" id="btnHomeOver" type="button">回到主页</button>
             </div>
           </div>
         </div>
 
-        <!-- 二次确认弹窗（退出对局 / 重新开始，防止误点直接毁掉当前对局） -->
+        <!-- 二次确认弹窗（退出 / 重新开始，按钮由脚本按情况生成） -->
         <div class="overlay hidden" id="overlayConfirm">
           <div class="overlay-card">
             <div class="result-title" id="confirmTitle">退出当前对局？</div>
-            <p class="tip" id="confirmMsg">返回模式选择会结束本局并清空得分，确定吗？</p>
-            <div class="result-btns">
-              <button class="btn primary" id="btnConfirmCancel" type="button">返回游戏</button>
-              <button class="btn danger" id="btnConfirmOk" type="button">确定退出</button>
+            <p class="tip" id="confirmMsg">退出会结束本局，确定吗？</p>
+            <div class="result-btns" id="confirmBtns"></div>
+            <p class="tip confirm-hint" id="confirmHint">键盘：Esc = 返回游戏</p>
+          </div>
+        </div>
+
+        <!-- 主页 -->
+        <div class="overlay" id="overlayHome">
+          <div class="overlay-card home-card">
+            <div class="home-logo"></div>
+            <h1 class="home-title">俄罗斯方块</h1>
+            <div class="home-sub">高端版 · 手机操控优化</div>
+
+            <button class="home-btn primary" id="btnHomeStart" type="button">开 始 游 戏</button>
+            <button class="home-btn hidden" id="btnHomeResume" type="button">
+              <span class="hb-main">继续上次游戏</span>
+              <span class="hb-sub" id="homeResumeSub"></span>
+            </button>
+
+            <div class="home-bests" id="homeBests"></div>
+
+            <div class="toggles">
+              <button class="toggle" id="btnGhost" type="button" title="开关半透明落点提示">幽灵落点</button>
+              <button class="toggle" id="btnSound" type="button" title="开关音效">音效</button>
+              <button class="toggle" id="btnTouch" type="button" title="手指滑屏操作：开启后下方普通按键隐藏，改为在棋盘上滑动操作">虚拟按键</button>
             </div>
-            <p class="tip confirm-hint">键盘：Esc / 回车 = 返回游戏 · 需按 Tab 切到红色按钮再回车才确认</p>
+            <div class="home-tip">
+              默认用下方按键操作；打开「虚拟按键」后按键隐藏，改为在棋盘上滑动操作
+            </div>
+          </div>
+        </div>
+
+        <!-- 继续上次对局 -->
+        <div class="overlay hidden" id="overlayResume">
+          <div class="overlay-card">
+            <div class="result-title">发现上次的存档</div>
+            <div class="result-sub" id="resumeSub">经典无尽 · 得分 0 · 等级 1</div>
+            <p class="tip">要继续上次没打完的对局，还是重新开始一局？</p>
+            <div class="result-btns">
+              <button class="btn primary" id="btnResumeContinue" type="button">继续游玩</button>
+              <button class="btn" id="btnResumeRestart" type="button">重新开始</button>
+            </div>
+            <div class="result-btns" style="margin-top:9px">
+              <button class="btn" id="btnResumeCancel" type="button">取消</button>
+            </div>
           </div>
         </div>
 
@@ -538,28 +639,6 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
         <canvas id="previewSide" width="68" height="204"></canvas>
       </div>
     </div>
-
-    <!-- 桌面端信息面板 -->
-    <aside class="panel">
-      <div class="card timer-card" id="timerCard">
-        <h2>倒计时（限时模式）</h2>
-        <div class="stat"><span class="k" id="timerLabel">经典无尽 ∞</span><span class="v" id="vTimer">∞</span></div>
-      </div>
-      <div class="card">
-        <div class="stat"><span class="k">当前得分</span><span class="v" id="vScore">0</span></div>
-        <div class="stat"><span class="k">消除总行数</span><span class="v" id="vLines">0</span></div>
-        <div class="stat"><span class="k">当前等级</span><span class="v" id="vLevel">1</span></div>
-        <div class="stat"><span class="k">游戏模式</span><span class="v small" id="vMode">待选择</span></div>
-      </div>
-      <div class="card">
-        <div class="stat"><span class="k">本模式最高分</span><span class="v" id="vBest" style="color:var(--gold)">0</span></div>
-      </div>
-      <div class="actions">
-        <button class="btn primary" id="btnStart" type="button">开始游戏</button>
-        <button class="btn" id="btnPause" type="button" disabled>暂停</button>
-        <button class="btn" id="btnMenu" type="button">模式选择</button>
-      </div>
-    </aside>
   </main>
 
   <!-- ===== 手机端虚拟按键（左下方向 / 右下功能） ===== -->
@@ -636,6 +715,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     m5:      { key: 'm5',      name: '5 分钟标准', seconds: 300 },
     m10:     { key: 'm10',     name: '10 分钟超长', seconds: 600 }
   };
+  const MODE_ORDER = ['classic', 'm3', 'm5', 'm10'];   // 界面展示顺序
 
   // 7 种方块配色（通透、区分度高）
   const COLORS = {
@@ -787,10 +867,12 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   let queue = [];               // 接下来的方块队列（前 3 个用于预览）
   let clearing = null;          // 消行动画状态 { rows:[], t:ms }
 
-  let state = 'idle';           // idle 待开始 / playing 游戏中 / paused 暂停 / over 结束
-  let confirmCtx = null;        // 二次确认弹窗上下文 { action:'menu'|'restart', wasPaused:bool }
+  let state = 'home';           // home 主页 / idle 选模式 / playing 游戏中 / paused 暂停 / over 结束
+  let confirmCtx = null;        // 二次确认弹窗上下文 { kind:'exit'|'restart', wasPaused:bool }
+  let resumeKey = null;         // 正在询问「继续还是重开」的模式 key
   let mode = null;              // 当前模式对象
   let lastModeKey = null;       // 上次使用的模式（用于「开始游戏 / 重新开始」）
+  let dirty = false;            // 本局是否有未保存的进度（自动保存用）
 
   let score = 0;                // 本局得分
   let lines = 0;                // 本局消除行数
@@ -826,35 +908,43 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   const el = {
     app: $('app'),
     stage: document.querySelector('.stage'),
-    panel: document.querySelector('.panel'),
-    topbar: document.querySelector('.topbar'),
-    toggles: document.querySelector('.toggles'),
     boardArea: $('boardArea'),
     boardWrap: $('boardWrap'),
     canvas: $('boardCanvas'),
     previewSide: $('previewSide'),
     sidePreview: $('sidePreview'),
 
+    overlayHome: $('overlayHome'),
     overlayMode: $('overlayMode'),
     overlayPause: $('overlayPause'),
     overlayOver: $('overlayOver'),
     overlayConfirm: $('overlayConfirm'),
+    overlayResume: $('overlayResume'),
 
-    vScore: $('vScore'), vLines: $('vLines'), vLevel: $('vLevel'),
-    vTimer: $('vTimer'), vMode: $('vMode'), vBest: $('vBest'),
-    timerCard: $('timerCard'), timerLabel: $('timerLabel'),
-
+    // 游戏内顶部条 + 右侧数据栏
     mScore: $('mScore'), mLines: $('mLines'), mLevel: $('mLevel'),
     mTimer: $('mTimer'), mTimerBox: $('mTimerBox'), mBest: $('mBest'), mState: $('mState'),
-
-    btnStart: $('btnStart'), btnPause: $('btnPause'), btnMenu: $('btnMenu'),
-    btnGhost: $('btnGhost'), btnSound: $('btnSound'), btnTouch: $('btnTouch'),
     mBtnPause: $('mBtnPause'), mBtnStart: $('mBtnStart'), mBtnMenu: $('mBtnMenu'),
 
-    btnResume: $('btnResume'), btnRestartPause: $('btnRestartPause'), btnMenuPause: $('btnMenuPause'),
-    btnRestart: $('btnRestart'), btnMenuOver: $('btnMenuOver'),
+    // 主页
+    btnGhost: $('btnGhost'), btnSound: $('btnSound'), btnTouch: $('btnTouch'),
+    btnHomeStart: $('btnHomeStart'), btnHomeResume: $('btnHomeResume'),
+    homeResumeSub: $('homeResumeSub'), homeBests: $('homeBests'),
+
+    // 模式选择 / 继续对局
+    btnModeBack: $('btnModeBack'),
+    resumeSub: $('resumeSub'),
+    btnResumeContinue: $('btnResumeContinue'),
+    btnResumeRestart: $('btnResumeRestart'),
+    btnResumeCancel: $('btnResumeCancel'),
+
+    // 暂停 / 结算
+    btnResume: $('btnResume'), btnRestartPause: $('btnRestartPause'),
+    btnMenuPause: $('btnMenuPause'), btnSaveQuitPause: $('btnSaveQuitPause'),
+    btnRestart: $('btnRestart'), btnMenuOver: $('btnMenuOver'), btnHomeOver: $('btnHomeOver'),
+
     confirmTitle: $('confirmTitle'), confirmMsg: $('confirmMsg'),
-    btnConfirmOk: $('btnConfirmOk'), btnConfirmCancel: $('btnConfirmCancel'),
+    confirmBtns: $('confirmBtns'), confirmHint: $('confirmHint'),
 
     overTitle: $('overTitle'), overSub: $('overSub'),
     rScore: $('rScore'), rLines: $('rLines'), rRating: $('rRating'), rBest: $('rBest'),
@@ -942,33 +1032,13 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   let lastLayoutKey = '';
   let layoutRetry = false;
 
-  /**
-   * 三个开关（幽灵落点 / 音效 / 虚拟按键）的位置：
-   * 桌面端放进右侧面板、排在「倒计时」上方；手机端面板隐藏，仍留在顶栏。
-   */
-  function placeToggles(mobile) {
-    const box = el.toggles;
-    if (!box) return;
-    if (mobile) {
-      if (el.topbar && box.parentNode !== el.topbar) el.topbar.appendChild(box);
-    } else if (el.panel && el.timerCard && box.parentNode !== el.panel) {
-      el.panel.insertBefore(box, el.timerCard);
-    }
-  }
-
   function layout() {
-    const mobile = window.innerWidth <= 860;
-    document.body.classList.toggle('mobile', mobile);
+    // 手机端为主：所有设备统一使用手机版布局（桌面打开时 #app 会限制宽度并居中）
+    const mobile = true;
+    document.body.classList.add('mobile');
     document.body.classList.toggle('touch-on', showTouch);
-    placeToggles(mobile);
 
-    // 可用宽度从 .stage（整行容器）量取再扣掉右侧面板，这样 .board-area 的宽度
-    // 可以随内容收缩（面板紧贴棋盘），也不会出现自引用；高度仍由 stretch 决定
-    let availW = el.stage ? el.stage.clientWidth : el.boardArea.clientWidth;
-    if (!mobile) {
-      const pw = (el.panel && el.panel.offsetWidth) ? el.panel.offsetWidth : PANEL_W;
-      availW -= (pw + STAGE_GAP);
-    }
+    const availW = el.boardArea.clientWidth;
     const availH = el.boardArea.clientHeight;
 
     // 尺寸尚未成型（首帧、刚切换布局、或元素被隐藏）时，下一帧重试，
@@ -1421,6 +1491,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   function lockPiece() {
     if (!active) return;
     const m = active.matrix;
+    dirty = true;            // 有方块落地 = 进度有变化，自动保存用
 
     // 写入棋盘
     for (let r = 0; r < m.length; r++) {
@@ -1498,10 +1569,140 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     drawPreview();   // 立刻刷新「下一个方块」预览
   }
 
-  /** 开始 / 重新开始一局（模式数据完全重置，不残留分数与行数） */
-  function startGame(modeKey) {
+  /* ---------- 存档：每个模式各存一份，退出/被杀进程后都能继续 ---------- */
+
+  const SAVE_PREFIX = 'tetris.save.';
+
+  /** 把当前对局序列化成可存储的对象 */
+  function serializeGame() {
+    if (!mode) return null;
+    // 若正好卡在消行动画里，先把该消的行真正消掉，避免读档后重复计分
+    if (clearing) {
+      const rows = clearing.rows.slice().sort(function (a, b) { return a - b; });
+      for (let i = 0; i < rows.length; i++) {
+        field.splice(rows[i], 1);
+        field.unshift(new Array(COLS).fill(null));
+      }
+      clearing = null;
+    }
+    let cells = '';
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) cells += (field[r][c] || '.');
+    }
+    return {
+      v: 1,
+      mode: mode.key,
+      cells: cells,
+      score: score, lines: lines, level: level,
+      timer: Math.max(0, Math.round(timerRemain)),
+      queue: queue.slice(0, 3),
+      bag: bag.slice(0),
+      active: active ? { type: active.type, x: active.x, y: active.y, rot: active.rot } : null,
+      savedAt: Date.now()
+    };
+  }
+
+  /** 保存当前对局到该模式自己的存档槽 */
+  function saveGame(silent) {
+    if (!mode || (state !== 'playing' && state !== 'paused')) return false;
+    const data = serializeGame();
+    if (!data) return false;
+    try { localStorage.setItem(SAVE_PREFIX + mode.key, JSON.stringify(data)); } catch (e) { return false; }
+    dirty = false;
+    backupSave();
+    refreshModeCards();
+    if (!silent) toast('进度已保存');
+    return true;
+  }
+
+  function loadSave(key) {
+    try {
+      const raw = localStorage.getItem(SAVE_PREFIX + key);
+      if (!raw) return null;
+      const d = JSON.parse(raw);
+      if (!d || d.v !== 1 || d.mode !== key || typeof d.cells !== 'string') return null;
+      return d;
+    } catch (e) { return null; }
+  }
+  function hasSave(key) { return !!loadSave(key); }
+  function clearSave(key) {
+    try { localStorage.removeItem(SAVE_PREFIX + key); } catch (e) { /* 忽略 */ }
+    backupSave();
+    refreshModeCards();
+    refreshHome();
+  }
+  /** 最近保存过的那份存档属于哪个模式 */
+  function latestSaveKey() {
+    let key = null, ts = 0;
+    MODE_ORDER.forEach(function (k) {
+      const d = loadSave(k);
+      if (d && d.savedAt > ts) { ts = d.savedAt; key = k; }
+    });
+    return key;
+  }
+
+  /** 把存档数据还原到当前对局 */
+  function applySaveData(d) {
+    const g = createGrid();
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const ch = d.cells.charAt(r * COLS + c);
+        g[r][c] = (ch && ch !== '.') ? ch : null;
+      }
+    }
+    field = g;
+    score = d.score | 0;
+    lines = d.lines | 0;
+    level = Math.max(1, d.level | 0);
+    timerRemain = Math.max(0, d.timer | 0);
+    queue = (d.queue || []).slice(0, 3);
+    while (queue.length < 3) queue.push(nextType());
+    bag = (d.bag || []).slice(0);
+    clearing = null;
+    dropAcc = 0; lockAcc = 0; lockResets = 0;
+    active = null;
+    if (d.active && ROT[d.active.type]) {
+      const rot = ((d.active.rot | 0) % 4 + 4) % 4;
+      const m = ROT[d.active.type][rot];
+      if (canPlace(m, d.active.x, d.active.y)) {
+        active = { type: d.active.type, matrix: m, rot: rot, x: d.active.x, y: d.active.y };
+      }
+    }
+    if (!active) spawn();
+    drawPreview();
+  }
+
+  /** 「多久以前」的简短描述 */
+  function timeAgo(ts) {
+    const diff = Date.now() - (ts || 0);
+    if (diff < 60000) return '刚刚';
+    if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小时前';
+    return Math.floor(diff / 86400000) + ' 天前';
+  }
+
+  /** 短暂的浮动提示 */
+  let toastTimer = 0;
+  function toast(msg) {
+    let node = document.getElementById('toastChip');
+    if (!node) {
+      node = document.createElement('div');
+      node.id = 'toastChip';
+      node.className = 'app-update-chip';
+      node.style.pointerEvents = 'none';
+      el.app.appendChild(node);
+    }
+    node.textContent = msg;
+    node.classList.remove('hidden');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { node.classList.add('hidden'); }, 1800);
+  }
+
+  /** 开始 / 重新开始一局；传 savedData 表示继续上次的存档 */
+  function startGame(modeKey, savedData) {
     const m = MODES[modeKey] || MODES.classic;
     confirmCtx = null;
+    resumeKey = null;
     mode = m;
     lastModeKey = m.key;
 
@@ -1509,13 +1710,30 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     timerRemain = m.seconds * 1000;
 
     state = 'playing';
+    if (savedData) applySaveData(savedData);
     hideAllOverlays();
+    dirty = true;
 
     SFX.init();
     SFX.resume();
     SFX.start();
 
-    spawn();
+    if (!active && !clearing) spawn();
+    updateHUD();
+    updateTimerUI();
+  }
+
+  /** 回到主页（局中会先自动存一份，避免误触丢进度） */
+  function goHome() {
+    if (state === 'playing' || state === 'paused') saveGame(true);
+    confirmCtx = null;
+    resumeKey = null;
+    state = 'home';
+    resetGameData();
+    mode = null;
+    hideAllOverlays();
+    showOverlay('home');
+    refreshHome();
     updateHUD();
     updateTimerUI();
   }
@@ -1525,9 +1743,10 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     state = 'paused';
     endSoft();
     stopAutoMove();
+    saveGame(true);              // 暂停即保存，切后台/被杀也不怕
     el.pauseTip.textContent = auto
-      ? '检测到页面切换，已自动暂停；倒计时已冻结，点击继续回到游戏。'
-      : '倒计时已冻结，点击继续回到游戏。';
+      ? '检测到切换到后台，已自动暂停并保存进度。'
+      : '已暂停（进度已自动保存）。';
     showOverlay('pause');
     updateHUD();
   }
@@ -1585,61 +1804,115 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     SFX.over();
     updateHUD();
     updateTimerUI();
+    if (mode) clearSave(mode.key);   // 本局已结束，清掉该模式的存档
   }
 
-  /** 返回模式选择界面：清空本局数据 */
+  /** 进入模式选择界面 */
   function backToMenu() {
     confirmCtx = null;
+    resumeKey = null;
     state = 'idle';
     resetGameData();
     mode = null;
     hideAllOverlays();
     showOverlay('mode');
-    refreshModeCards();          // 模式卡片上显示各自最高分
+    refreshModeCards();          // 模式卡片上显示各自最高分与「有存档」标记
     updateHUD();
     updateTimerUI();
   }
 
-  /* ---------- 二次确认：防止误点「模式选择 / 重新开始」直接毁掉当前对局 ---------- */
+  /* ---------- 选择模式：有存档就先问「继续还是重开」 ---------- */
+
+  function chooseMode(key) {
+    if (!MODES[key]) return;
+    if (hasSave(key)) {
+      resumeKey = key;
+      const d = loadSave(key);
+      setText(el.resumeSub, MODES[key].name + ' · 得分 ' + ((d && d.score) | 0) +
+        ' · 等级 Lv.' + ((d && d.level) | 0) + ' · ' + timeAgo(d && d.savedAt));
+      showOverlay('resume');
+      return;
+    }
+    startGame(key);
+  }
+
+  function resumeContinue() {
+    const key = resumeKey;
+    resumeKey = null;
+    if (!key) return;
+    const d = loadSave(key);
+    if (!d) { startGame(key); return; }
+    startGame(key, d);
+    toast('已继续上次的对局');
+  }
+
+  function resumeRestart() {
+    const key = resumeKey;
+    resumeKey = null;
+    if (!key) return;
+    clearSave(key);
+    startGame(key);
+  }
+
+  function resumeCancel() {
+    resumeKey = null;
+    backToMenu();
+  }
+
+  /* ---------- 二次确认弹窗（退出 / 重新开始），按钮按情况生成 ---------- */
+
+  function setConfirmButtons(list) {
+    el.confirmBtns.innerHTML = '';
+    list.forEach(function (item) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn' + (item.style ? ' ' + item.style : '');
+      b.textContent = item.label;
+      b.addEventListener('click', item.onClick);
+      el.confirmBtns.appendChild(b);
+    });
+  }
 
   /**
-   * 打开确认弹窗。
-   * 打开期间会把对局冻结（state 置为 paused），倒计时同步冻结，避免弹窗后面方块还在掉。
+   * 打开确认弹窗。打开期间对局冻结（state 置为 paused），倒计时同步冻结。
+   * kind = 'exit' 退出对局（三个选择：返回游戏 / 保存并退出 / 退出到模式选择）
+   * kind = 'restart' 重新开始（两个选择：返回游戏 / 重新开始）
    */
-  function openConfirm(action) {
-    // 没有进行中的对局（待开始 / 已结束）时无需确认，直接执行
+  function openConfirm(kind) {
     if (state !== 'playing' && state !== 'paused') {
-      if (action === 'menu') backToMenu();
+      if (kind === 'exit') backToMenu();
       else startGame(lastModeKey || 'classic');
       return;
     }
-
-    // 已经在确认中时只切换要确认的动作，保留最初的 wasPaused（决定取消后回到哪里）
-    if (!confirmCtx) {
-      confirmCtx = { action: action, wasPaused: (state === 'paused') };
-    } else {
-      confirmCtx.action = action;
-    }
+    if (!confirmCtx) confirmCtx = { kind: kind, wasPaused: (state === 'paused') };
+    else confirmCtx.kind = kind;
     state = 'paused';
     endSoft();
     stopAutoMove();
 
-    if (action === 'menu') {
+    if (kind === 'exit') {
       setText(el.confirmTitle, '退出当前对局？');
-      setText(el.confirmMsg, '返回模式选择会结束本局并清空当前得分与进度。');
-      setText(el.btnConfirmOk, '退出到模式选择');
-      el.btnConfirmOk.className = 'btn danger';
+      setText(el.confirmMsg, '「保存并退出」会保留进度，下次选同一个模式可以继续玩；直接退出则放弃本局。');
+      setConfirmButtons([
+        { label: '返回游戏', style: 'primary', onClick: cancelConfirm },
+        { label: '保存并退出', onClick: saveAndExit },
+        { label: '退出到模式选择', style: 'danger', onClick: discardAndExit }
+      ]);
+      setText(el.confirmHint, '提示：手机直接切后台或杀进程也会自动保存');
     } else {
       setText(el.confirmTitle, '重新开始本局？');
       setText(el.confirmMsg, '当前得分与进度将被清空，重新开始一局全新的对局。');
-      setText(el.btnConfirmOk, '重新开始');
-      el.btnConfirmOk.className = 'btn danger';
+      setConfirmButtons([
+        { label: '返回游戏', style: 'primary', onClick: cancelConfirm },
+        { label: '重新开始', style: 'danger', onClick: confirmRestart }
+      ]);
+      setText(el.confirmHint, '当前进度会被清空');
     }
 
     showOverlay('confirm');
     // 焦点默认给「返回游戏」：键盘直接回车/空格也是取消，绝不会误确认
-    try { el.btnConfirmCancel.focus({ preventScroll: true }); }
-    catch (err) { try { el.btnConfirmCancel.focus(); } catch (err2) { /* 忽略 */ } }
+    try { el.confirmBtns.firstChild.focus({ preventScroll: true }); }
+    catch (err) { /* 忽略 */ }
     updateHUD();
   }
 
@@ -1658,25 +1931,27 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     updateHUD();
   }
 
-  /** 确认执行 */
-  function confirmYes() {
-    if (!confirmCtx) return;
-    const action = confirmCtx.action;
+  /** 保存并退出：留下存档，回到模式选择 */
+  function saveAndExit() {
     confirmCtx = null;
-    if (action === 'menu') backToMenu();
-    else startGame(lastModeKey || 'classic');
+    const ok = saveGame(true);
+    backToMenu();
+    toast(ok ? '进度已保存，下次可继续' : '保存失败');
   }
 
-  /** 「模式选择」入口：局中先弹确认 */
-  function requestMenu() {
-    if (state === 'playing' || state === 'paused') openConfirm('menu');
-    else backToMenu();
+  /** 退出到模式选择：放弃本局（清掉该模式存档） */
+  function discardAndExit() {
+    confirmCtx = null;
+    if (mode) clearSave(mode.key);
+    backToMenu();
+    toast('已放弃本局进度');
   }
 
-  /** 「开始游戏 / 重新开始」入口：局中先弹确认 */
-  function requestRestart() {
-    if (state === 'playing' || state === 'paused') openConfirm('restart');
-    else startGame(lastModeKey || 'classic');
+  /** 确认重新开始 */
+  function confirmRestart() {
+    confirmCtx = null;
+    if (mode) clearSave(mode.key);
+    startGame(lastModeKey || 'classic');
   }
 
   /* =======================================================================
@@ -1761,35 +2036,51 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   function updateTimerUI() {
     const limited = !!(mode && mode.seconds > 0);
     const txt = limited ? fmtTime(timerRemain) : '∞';
-    setText(el.vTimer, txt);
     setText(el.mTimer, txt);
-    setText(el.timerLabel, mode ? (limited ? mode.name + ' 剩余' : mode.name + ' 不限时') : '尚未选择模式');
-
     const warn = limited && timerRemain <= 30000;
-    if (el.timerCard) el.timerCard.classList.toggle('warn', warn);
     if (el.mTimerBox) el.mTimerBox.classList.toggle('warn', warn);
   }
 
-  /** 模式选择卡片上的「最高分」按各模式分别刷新 */
+  /** 模式选择卡片上的「最高分」和「有存档」标记，按各模式分别刷新 */
   function refreshModeCards() {
     if (!modeCards) return;
     for (let i = 0; i < modeCards.length; i++) {
+      const key = modeCards[i].getAttribute('data-mode');
       const node = modeCards[i].querySelector('.mc-best b');
-      if (node) setText(node, bestOf(modeCards[i].getAttribute('data-mode')));
+      if (node) setText(node, bestOf(key));
+      const badge = modeCards[i].querySelector('.mc-save');
+      if (badge) badge.classList.toggle('hidden', !hasSave(key));
+    }
+  }
+
+  /** 主页上的「继续上次游戏」按钮与各模式最高分 */
+  function refreshHome() {
+    // 各模式最高分一览
+    if (el.homeBests) {
+      let html = '';
+      MODE_ORDER.forEach(function (k) {
+        html += '<div>' + MODES[k].name + '<b>' + bestOf(k) + '</b></div>';
+      });
+      el.homeBests.innerHTML = html;
+    }
+    // 最近一次存档
+    const last = latestSaveKey();
+    if (el.btnHomeResume && el.homeResumeSub) {
+      if (last) {
+        const d = loadSave(last);
+        el.btnHomeResume.classList.remove('hidden');
+        el.homeResumeSub.textContent = MODES[last].name + ' · 得分 ' + (d ? d.score : 0) +
+          ' · 等级 Lv.' + (d ? d.level : 1);
+      } else {
+        el.btnHomeResume.classList.add('hidden');
+      }
     }
   }
 
   function updateHUD() {
-    // 「游戏状态」已改成展示当前游戏模式，同时显示该模式自己的最高分
     const modeName = mode ? mode.name : '待选择';
     const mkey = currentModeKey();
     const modeBest = bestOf(mkey);
-
-    setText(el.vScore, score);
-    setText(el.vLines, lines);
-    setText(el.vLevel, level);
-    setText(el.vMode, modeName);
-    setText(el.vBest, modeBest);
 
     setText(el.mScore, score);
     setText(el.mLines, lines);
@@ -1798,27 +2089,24 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     setText(el.mBest, modeBest);
 
     refreshModeCards();
-
-    // 按钮文案与可用状态
-    setText(el.btnStart, state === 'idle' ? '开始游戏' : '重新开始');
-    setText(el.btnPause, state === 'paused' ? '继续' : '暂停');
-    el.btnPause.disabled = !(state === 'playing' || state === 'paused');
     setText(el.mBtnPause, state === 'paused' ? '▶' : '❚❚');
 
     updateTimerUI();
   }
 
+  const ALL_OVERLAYS = ['home', 'mode', 'pause', 'over', 'confirm', 'resume'];
+
   function showOverlay(which) {
-    el.overlayMode.classList.toggle('hidden', which !== 'mode');
-    el.overlayPause.classList.toggle('hidden', which !== 'pause');
-    el.overlayOver.classList.toggle('hidden', which !== 'over');
-    el.overlayConfirm.classList.toggle('hidden', which !== 'confirm');
+    ALL_OVERLAYS.forEach(function (name) {
+      const node = el['overlay' + name.charAt(0).toUpperCase() + name.slice(1)];
+      if (node) node.classList.toggle('hidden', which !== name);
+    });
   }
   function hideAllOverlays() {
-    el.overlayMode.classList.add('hidden');
-    el.overlayPause.classList.add('hidden');
-    el.overlayOver.classList.add('hidden');
-    el.overlayConfirm.classList.add('hidden');
+    ALL_OVERLAYS.forEach(function (name) {
+      const node = el['overlay' + name.charAt(0).toUpperCase() + name.slice(1)];
+      if (node) node.classList.add('hidden');
+    });
   }
 
   /* =======================================================================
@@ -1850,8 +2138,13 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     }
 
     // 待开始 / 已结束时，回车或空格快速开局
+    if (state === 'home') {
+      if (k === ' ' || k === 'Enter') showOverlay('mode');
+      return;
+    }
     if (state === 'idle') {
       if ((k === ' ' || k === 'Enter') && lastModeKey) startGame(lastModeKey);
+      else if (k === 'Escape') { if (resumeKey) resumeCancel(); else goHome(); }
       return;
     }
     if (state === 'over') {
@@ -1892,15 +2185,28 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     }
   });
 
-  // 失焦 / 切后台：松开软降与左右连续移动并自动暂停，避免「按键卡住」和倒计时被偷走
+  // 失焦 / 切后台：松开软降与左右连续移动，并自动暂停 + 保存
   window.addEventListener('blur', function () { endSoft(); stopAutoMove(); });
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) {
       endSoft();
       stopAutoMove();
       if (state === 'playing') pauseGame(true);
+      else if (state === 'paused') saveGame(true);
     }
   });
+
+  /* ---------- 手机端「直接退出」也要自动保存 ---------- */
+  function autoSaveNow() {
+    if (state === 'playing' || state === 'paused') saveGame(true);
+  }
+  window.addEventListener('pagehide', autoSaveNow);
+  window.addEventListener('beforeunload', autoSaveNow);
+  document.addEventListener('pause', autoSaveNow, false);   // DCloud App 切到后台
+  // 兜底：每 15 秒存一次，防止进程被系统直接杀掉来不及保存
+  setInterval(function () {
+    if (state === 'playing' && dirty) saveGame(true);
+  }, 15000);
 
   // ---------- 顶部开关 ----------
   function refreshToggles() {
@@ -1942,48 +2248,55 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     layout();
   });
 
-  // ---------- 弹窗与面板按钮 ----------
-  // 说明：局中点「模式选择 / 重新开始」会先弹二次确认，避免误点直接清空当前对局
-  el.btnStart.addEventListener('click', function () {
-    if (state === 'idle' && !lastModeKey) { showOverlay('mode'); return; }
-    requestRestart();
+  // ---------- 主页 / 模式选择 / 弹窗 按钮 ----------
+  // 主页
+  el.btnHomeStart.addEventListener('click', function () { showOverlay('mode'); refreshModeCards(); });
+  el.btnHomeResume.addEventListener('click', function () {
+    const key = latestSaveKey();
+    if (key) chooseMode(key); else refreshHome();
   });
-  el.btnPause.addEventListener('click', function () {
-    if (confirmCtx) return;
-    if (state === 'playing') pauseGame(false);
-    else if (state === 'paused') resumeGame();
-  });
-  el.btnMenu.addEventListener('click', requestMenu);
 
-  el.mBtnStart.addEventListener('click', requestRestart);
+  // 模式选择
+  el.btnModeBack.addEventListener('click', goHome);
+
+  // 继续 / 重开
+  el.btnResumeContinue.addEventListener('click', resumeContinue);
+  el.btnResumeRestart.addEventListener('click', resumeRestart);
+  el.btnResumeCancel.addEventListener('click', resumeCancel);
+
+  // 游戏中顶部条
   el.mBtnPause.addEventListener('click', function () {
     if (confirmCtx) return;
     if (state === 'playing') pauseGame(false);
     else if (state === 'paused') resumeGame();
   });
-  el.mBtnMenu.addEventListener('click', requestMenu);
+  el.mBtnStart.addEventListener('click', function () { openConfirm('restart'); });
+  el.mBtnMenu.addEventListener('click', function () { openConfirm('exit'); });
 
+  // 暂停面板
   el.btnResume.addEventListener('click', resumeGame);
-  el.btnRestartPause.addEventListener('click', requestRestart);
-  el.btnMenuPause.addEventListener('click', requestMenu);
+  el.btnSaveQuitPause.addEventListener('click', saveAndExit);
+  el.btnRestartPause.addEventListener('click', function () { openConfirm('restart'); });
+  el.btnMenuPause.addEventListener('click', function () { openConfirm('exit'); });
 
-  el.btnRestart.addEventListener('click', function () { startGame(lastModeKey || 'classic'); });
+  // 结算面板
+  el.btnRestart.addEventListener('click', function () {
+    if (mode) clearSave(mode.key);
+    startGame(lastModeKey || 'classic');
+  });
   el.btnMenuOver.addEventListener('click', backToMenu);
+  el.btnHomeOver.addEventListener('click', goHome);
 
-  // 确认弹窗按钮
-  el.btnConfirmCancel.addEventListener('click', cancelConfirm);
-  el.btnConfirmOk.addEventListener('click', confirmYes);
-  // 点击确认弹窗外的空白区域 = 取消（永远是安全的那一侧）
+  // 点击确认弹窗外面的空白 = 取消（永远是安全的那一侧）
   el.overlayConfirm.addEventListener('click', function (e) {
     if (e.target === el.overlayConfirm) cancelConfirm();
   });
 
-  // 模式选择：点击任一模式卡片即开始游戏（限时模式倒计时同步启动）
+  // 模式选择：有存档先问「继续还是重开」，没有就直接开始
   const modeCards = document.querySelectorAll('.mode-card');
   for (let i = 0; i < modeCards.length; i++) {
     modeCards[i].addEventListener('click', function () {
-      const key = this.getAttribute('data-mode');
-      if (MODES[key]) startGame(key);
+      chooseMode(this.getAttribute('data-mode'));
     });
   }
 
@@ -2198,7 +2511,10 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
   const IS_APP_ENV = /Html5Plus|StreamApp/i.test(navigator.userAgent);
   const SAVE_FILE = '_doc/tetris/save.json';
-  const SAVE_KEYS = ['tetris.best.v2', 'tetris.best.v1', 'tetris.settings.v1'];
+  const SAVE_KEYS = [
+    'tetris.best.v2', 'tetris.best.v1', 'tetris.settings.v1',
+    'tetris.save.classic', 'tetris.save.m3', 'tetris.save.m5', 'tetris.save.m10'
+  ];
 
   function hasPlusIO() { return !!(window.plus && plus.io); }
 
@@ -2425,11 +2741,14 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     // 再补一次：首帧字体/滚动条落定后尺寸可能微调，确保棋盘按最终空间铺满
     requestAnimationFrame(function () { layout(); });
 
-    // 开局：必须选择模式才能开始游戏
-    state = 'idle';
+    // 开局先进主页，点「开始游戏」再选模式
+    state = 'home';
     resetGameData();
     mode = null;
-    showOverlay('mode');
+    hideAllOverlays();
+    showOverlay('home');
+    refreshHome();
+    refreshModeCards();
     updateHUD();
     updateTimerUI();
 

@@ -1,6 +1,6 @@
 {
-  "version": 2,
+  "version": 3,
   "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
-  "size": 100633,
-  "note": "俄罗斯方块游戏"
+  "size": 111787,
+  "note": "新增主页、分模式存档、继续对局、退出三选项"
 }
