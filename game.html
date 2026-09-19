@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b16" />
 <!-- App 资源版本号：每发布一次新版本把它 +1（发布流程见 HBuilder打包/使用说明.md）
      启动壳与 App 内更新都靠这个标记判断新旧，平时只需改这一处 -->
-<meta name="app-version" content="8" />
+<meta name="app-version" content="8.2" />
 <title>俄罗斯方块 · 高端版</title>
 <style>
 /* =========================================================================
@@ -401,6 +401,22 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
 /* ---------- 9. 主页 ---------- */
 .home-card{ text-align:center; }
+/* 主页铺满整屏：不再是居中的一小块卡片 */
+#overlayHome{ padding:0; }
+#overlayHome .home-card{
+  max-width:none; width:100%; min-height:100%;
+  border-radius:0; border:none;
+  display:flex; flex-direction:column; justify-content:center;
+  padding:34px 20px calc(30px + env(safe-area-inset-bottom, 0px));
+  overflow-y:auto;
+  background:
+    radial-gradient(760px 460px at 50% 0%, rgba(76,201,240,.18), rgba(0,0,0,0) 70%),
+    radial-gradient(700px 520px at 50% 110%, rgba(168,85,247,.16), rgba(0,0,0,0) 70%),
+    linear-gradient(170deg, #131d38 0%, #0a1020 58%, #070b16 100%);
+}
+/* 上下各留一个自动外边距：内容整体居中，工具按钮沉到底部 */
+#overlayHome .home-hero{ margin-top:auto; }
+#overlayHome .home-tools{ margin-top:auto; }
 .home-hero{ margin-bottom:18px; }
 .home-logo{
   width:60px; height:60px; margin:0 auto 12px; border-radius:18px;
@@ -681,7 +697,6 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
             <div class="home-hero">
               <div class="home-logo"></div>
               <h1 class="home-title">俄罗斯方块</h1>
-              <div class="home-sub">高端版 · 手机操控优化</div>
             </div>
 
             <button class="home-btn primary" id="btnHomeStart" type="button">开 始 游 戏</button>
@@ -843,7 +858,10 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   const SOFT_DROP_MS = 70;      // 长按软降时的下落间隔（数值越小越快）
   const SOFT_HOLD_DELAY = 180;  // 按下 ↓ 后先精确落 1 格，按住超过该时长才进入连续软降
   const SOFT_KEY_WATCHDOG = 1200; // 键盘软降的保险时长：超过这么久没收到 ↓ 的 keydown 就自动松开
-  const MIN_DROP_MS = 100;      // 速度上限（最快每格 100ms）
+
+  const MIN_DROP_MS = 100;      // 标准速度的下限（普通模式 14 级 / 极速模式 4 级正好到这里）
+  const LATE_STEP_MS = 7;       // 越过下限之后，每升一级减少的毫秒数（原 70ms 的十分之一）
+  const MIN_DROP_MS_HARD = 20;  // 纯安全下限，防止间隔趋近 0（实际玩不到这么快）
 
   const LINES_PER_LEVEL = 10;   // 每消除 10 行升 1 级
   const SCORE_TABLE = { 1: 100, 2: 300, 3: 500, 4: 800 }; // 标准街机消行分
@@ -871,6 +889,20 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
      设置页会把它展示给玩家，更新弹窗里也会显示对应版本的第一条。
      ----------------------------------------------------------------------- */
   const CHANGELOG = [
+    {
+      v: '8.2',
+      items: [
+        '主页精简：去掉标题下方的「高端版 · 手机操控优化」文字'
+      ]
+    },
+    {
+      v: '8.1',
+      items: [
+        '速度上限打开：普通模式 14 级 / 极速模式 4 级之后不再停住，每升一级继续小幅加速（原增速的 1/10）',
+        '主页改为铺满整屏，不再是一小块居中卡片',
+        '极速模式后段会明显更快，高手可以一直挑战下去'
+      ]
+    },
     {
       v: '8',
       items: [
@@ -1516,11 +1548,19 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     return true;
   }
 
-  /** 当前等级对应的自动下落间隔（等级越高越快，最快 100ms）
-   *  极速模式带 speedOffset：等级 1 就按普通模式 11 级的速度来（1000 - 10×70 = 300ms） */
+  /**
+   * 当前等级对应的自动下落间隔。
+   * 前段（标准曲线）：每级 -70ms，最低 100ms —— 普通模式 14 级 / 极速模式 4 级正好到这里。
+   * 后段（新增）：越过 100ms 之后不再封顶，改为每级只 -7ms（原增速的十分之一），
+   *              越往后越难，但增长很平缓，不会一下子失控。
+   */
   function dropInterval() {
     const offset = (mode && mode.speedOffset) ? mode.speedOffset : 0;
-    return Math.max(MIN_DROP_MS, 1000 - (level - 1 + offset) * 70);
+    const eff = level - 1 + offset;          // 等效等级（从 0 起算）
+    if (eff <= 13) {
+      return Math.max(MIN_DROP_MS, 1000 - eff * 70);          // 1000 → 100ms
+    }
+    return Math.max(MIN_DROP_MS_HARD, 100 - (eff - 13) * LATE_STEP_MS);  // 100ms 之后每级 -7ms
   }
 
   /** 等级倍率：等级越高分数有轻微加成 */

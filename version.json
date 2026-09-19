@@ -1,6 +1,6 @@
 {
-  "version": 8,
+  "version": 8.2,
   "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
-  "size": 127209,
-  "note": "修复极速模式偶发卡死；设置页新增更新公告"
+  "size": 129068,
+  "note": "主页去掉副标题文字"
 }
