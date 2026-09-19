@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b16" />
 <!-- App 资源版本号：每发布一次新版本把它 +1（发布流程见 HBuilder打包/使用说明.md）
      启动壳与 App 内更新都靠这个标记判断新旧，平时只需改这一处 -->
-<meta name="app-version" content="3" />
+<meta name="app-version" content="4" />
 <title>俄罗斯方块 · 高端版</title>
 <style>
 /* =========================================================================
@@ -400,13 +400,14 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
 /* ---------- 9. 主页 ---------- */
 .home-card{ text-align:center; }
+.home-hero{ margin-bottom:18px; }
 .home-logo{
-  width:56px; height:56px; margin:2px auto 12px; border-radius:16px;
+  width:60px; height:60px; margin:0 auto 12px; border-radius:18px;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
-  box-shadow:0 0 26px rgba(76,201,240,.5), inset 0 0 14px rgba(255,255,255,.35);
+  box-shadow:0 0 28px rgba(76,201,240,.55), inset 0 0 14px rgba(255,255,255,.35);
 }
-.home-title{ margin:0; font-size:26px; letter-spacing:4px; }
-.home-sub{ margin:6px 0 18px; font-size:12px; color:var(--muted); letter-spacing:1px; }
+.home-title{ margin:0; font-size:27px; letter-spacing:5px; }
+.home-sub{ margin:7px 0 0; font-size:12px; color:var(--muted); letter-spacing:2px; }
 .home-btn{
   display:block; width:100%; padding:15px 16px; margin-bottom:10px;
   border-radius:14px; border:1px solid var(--panel-line);
@@ -417,22 +418,82 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 .home-btn:hover{ transform:translateY(-1px); }
 .home-btn.primary{
   background:linear-gradient(135deg,var(--accent),#5b8cff); color:#05131f;
-  border-color:transparent; box-shadow:0 8px 22px rgba(76,201,240,.32);
+  border-color:transparent; box-shadow:0 10px 26px rgba(76,201,240,.35);
+  font-size:17px; padding:16px;
 }
 .home-btn .hb-main{ display:block; }
 .home-btn .hb-sub{ display:block; font-size:11px; font-weight:400; letter-spacing:0; opacity:.85; margin-top:3px; }
-.home-bests{
-  display:grid; grid-template-columns:1fr 1fr; gap:6px;
-  margin:14px 0 12px;
+
+/* 最高分面板 */
+.home-panel{
+  margin:16px 0 14px; padding:10px 10px 12px;
+  border-radius:14px; border:1px solid var(--panel-line);
+  background:rgba(255,255,255,.035);
 }
+.home-panel-title{
+  font-size:11px; color:var(--muted); letter-spacing:2px; margin-bottom:8px;
+}
+.home-bests{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .home-bests div{
   background:rgba(255,255,255,.04); border:1px solid var(--panel-line);
   border-radius:9px; padding:6px 4px; font-size:11px; color:var(--muted);
 }
-.home-bests b{ display:block; color:var(--gold); font-size:14px; margin-top:2px;
+.home-bests b{ display:block; color:var(--gold); font-size:15px; margin-top:2px;
   font-family:ui-monospace,Consolas,monospace; }
-.home-tip{ font-size:11px; color:var(--muted); line-height:1.7; margin-top:10px; }
-.home-card .toggles{ justify-content:center; margin-top:14px; }
+
+/* 底部工具按钮 */
+.home-tools{ display:flex; gap:10px; }
+.tool-btn{
+  position:relative; flex:1; padding:12px 8px; border-radius:12px;
+  border:1px solid var(--panel-line); background:rgba(255,255,255,.05);
+  color:var(--muted); font-size:13px; transition:.16s ease;
+}
+.tool-btn:hover{ color:var(--text); border-color:rgba(120,170,255,.42); }
+.tool-btn i{ font-style:normal; margin-right:5px; font-size:15px; }
+.dot{
+  position:absolute; top:8px; right:10px;
+  width:9px; height:9px; border-radius:50%;
+  background:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.25), 0 0 10px rgba(255,77,79,.9);
+  animation:dotPulse 1.3s ease-in-out infinite;
+}
+@keyframes dotPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.25); } }
+
+/* 设置页 */
+.set-list{ display:flex; flex-direction:column; gap:8px; margin:6px 0 14px; }
+.set-row{
+  display:flex; align-items:center; gap:12px;
+  padding:11px 12px; border-radius:12px;
+  border:1px solid var(--panel-line); background:rgba(255,255,255,.04);
+}
+.set-info{ flex:1; min-width:0; text-align:left; }
+.set-info b{ display:block; font-size:14px; margin-bottom:2px; }
+.set-info span{ display:block; font-size:11px; color:var(--muted); line-height:1.5; }
+.switch{
+  position:relative; flex:0 0 auto; width:48px; height:27px; border-radius:99px;
+  border:1px solid var(--panel-line); background:rgba(255,255,255,.1);
+  transition:.18s ease;
+}
+.switch i{
+  position:absolute; top:2px; left:2px; width:21px; height:21px; border-radius:50%;
+  background:#8ea2c6; transition:.18s ease;
+}
+.switch.active{ background:linear-gradient(135deg,var(--accent),#5b8cff); border-color:transparent; }
+.switch.active i{ left:23px; background:#fff; }
+.set-foot{ border-top:1px dashed var(--panel-line); padding-top:12px; }
+.set-ver{ font-size:12px; color:var(--muted); margin-bottom:10px; }
+.set-ver b{ color:var(--accent); font-family:ui-monospace,Consolas,monospace; }
+
+/* 浮动提示 */
+.toast-chip{
+  position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+  z-index:120; max-width:90%; text-align:center;
+  padding:11px 20px; border-radius:99px; border:none;
+  font-size:13px; font-weight:700; white-space:nowrap;
+  color:#05131f; background:linear-gradient(135deg,var(--accent),#5b8cff);
+  box-shadow:0 10px 26px rgba(0,0,0,.55), 0 0 20px rgba(76,201,240,.35);
+  animation:chipIn .25s ease;
+}
+@keyframes chipIn{ from{ opacity:0; transform:translate(-50%,10px); } to{ opacity:1; transform:translate(-50%,0); } }
 
 /* ---------- 10. 游戏内顶部条 ---------- */
 .gamebar{
@@ -527,10 +588,8 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
               </button>
             </div>
             <div class="mode-foot">
-              <b>电脑</b>：← → 移动 · ↑ 顺时针 · ↓ 软降 · 空格硬降 · Z / B 逆时针 · P / Esc 暂停<br />
-              <b>电脑（WASD）</b>：W 顺时针 · A 左移 · S 软降 · D 右移（与方向键完全等价）<br />
-              <b>手机</b>：默认使用下方普通按键操作；打开顶栏「虚拟按键」开关后普通按键会隐藏，
-              改为直接在棋盘上操作（左右滑动移动 · 向下滑动加速下落 · 连续下滑两次直接落底 · 点击 / 上滑旋转）
+              <b>手机操作</b>：默认用下方按键；打开设置里的「虚拟按键」后按键隐藏，改为手指在棋盘上操作
+              （左右滑动移动 · 向下滑动加速下落 · 连续下滑两次直接落底 · 点击 / 上滑旋转）
             </div>
           </div>
         </div>
@@ -585,9 +644,11 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
         <!-- 主页 -->
         <div class="overlay" id="overlayHome">
           <div class="overlay-card home-card">
-            <div class="home-logo"></div>
-            <h1 class="home-title">俄罗斯方块</h1>
-            <div class="home-sub">高端版 · 手机操控优化</div>
+            <div class="home-hero">
+              <div class="home-logo"></div>
+              <h1 class="home-title">俄罗斯方块</h1>
+              <div class="home-sub">高端版 · 手机操控优化</div>
+            </div>
 
             <button class="home-btn primary" id="btnHomeStart" type="button">开 始 游 戏</button>
             <button class="home-btn hidden" id="btnHomeResume" type="button">
@@ -595,15 +656,62 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
               <span class="hb-sub" id="homeResumeSub"></span>
             </button>
 
-            <div class="home-bests" id="homeBests"></div>
-
-            <div class="toggles">
-              <button class="toggle" id="btnGhost" type="button" title="开关半透明落点提示">幽灵落点</button>
-              <button class="toggle" id="btnSound" type="button" title="开关音效">音效</button>
-              <button class="toggle" id="btnTouch" type="button" title="手指滑屏操作：开启后下方普通按键隐藏，改为在棋盘上滑动操作">虚拟按键</button>
+            <div class="home-panel">
+              <div class="home-panel-title">各模式最高分</div>
+              <div class="home-bests" id="homeBests"></div>
             </div>
-            <div class="home-tip">
-              默认用下方按键操作；打开「虚拟按键」后按键隐藏，改为在棋盘上滑动操作
+
+            <div class="home-tools">
+              <button class="tool-btn" id="btnHomeSettings" type="button"><i>⚙</i>设置</button>
+              <button class="tool-btn" id="btnHomeUpdate" type="button">
+                <i>⟳</i>检查更新
+                <span class="dot hidden" id="updateDot"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 设置页 -->
+        <div class="overlay hidden" id="overlaySettings">
+          <div class="overlay-card">
+            <div class="mode-head">
+              <button class="mini-btn" id="btnSettingsBack" type="button">‹ 主页</button>
+              <h2 class="mode-title">设置</h2>
+            </div>
+
+            <div class="set-list">
+              <div class="set-row">
+                <div class="set-info"><b>幽灵落点</b><span>在落点位置显示半透明提示</span></div>
+                <button class="switch" id="btnGhost" type="button" aria-label="幽灵落点"><i></i></button>
+              </div>
+              <div class="set-row">
+                <div class="set-info"><b>音效</b><span>移动 / 旋转 / 落地 / 消行音效</span></div>
+                <button class="switch" id="btnSound" type="button" aria-label="音效"><i></i></button>
+              </div>
+              <div class="set-row">
+                <div class="set-info"><b>虚拟按键</b><span>开启后隐藏下方按键，改为手指在棋盘上滑动操作</span></div>
+                <button class="switch" id="btnTouch" type="button" aria-label="虚拟按键"><i></i></button>
+              </div>
+            </div>
+
+            <div class="set-foot">
+              <div class="set-ver">当前版本 <b id="setVer">v-</b> · <span id="setUpdState">点击下方检查更新</span></div>
+              <button class="btn" id="btnSettingsUpdate" type="button">检查更新</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 检查更新 -->
+        <div class="overlay hidden" id="overlayUpdate">
+          <div class="overlay-card">
+            <div class="result-title" id="updTitle">检查更新</div>
+            <div class="result-sub" id="updSub">当前版本 v-</div>
+            <div class="result-best" id="updInfo">正在检查…</div>
+            <div class="result-btns">
+              <button class="btn primary hidden" id="btnDoUpdate" type="button">立即更新</button>
+            </div>
+            <div class="result-btns" style="margin-top:9px">
+              <button class="btn" id="btnUpdateClose" type="button">关闭</button>
             </div>
           </div>
         </div>
@@ -657,8 +765,8 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     </div>
   </div>
 
-  <!-- App 内更新提示：只在 HBuilder 打包的 App 里、且检测到新版本时出现 -->
-  <button class="app-update-chip hidden" id="appUpdateChip" type="button">发现新版本</button>
+  <!-- 浮动提示（保存成功 / 发现新版本等） -->
+  <div class="toast-chip hidden" id="toastChip"></div>
 
 </div>
 
@@ -920,6 +1028,8 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     overlayOver: $('overlayOver'),
     overlayConfirm: $('overlayConfirm'),
     overlayResume: $('overlayResume'),
+    overlaySettings: $('overlaySettings'),
+    overlayUpdate: $('overlayUpdate'),
 
     // 游戏内顶部条 + 右侧数据栏
     mScore: $('mScore'), mLines: $('mLines'), mLevel: $('mLevel'),
@@ -930,6 +1040,16 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     btnGhost: $('btnGhost'), btnSound: $('btnSound'), btnTouch: $('btnTouch'),
     btnHomeStart: $('btnHomeStart'), btnHomeResume: $('btnHomeResume'),
     homeResumeSub: $('homeResumeSub'), homeBests: $('homeBests'),
+    btnHomeSettings: $('btnHomeSettings'), btnHomeUpdate: $('btnHomeUpdate'),
+    updateDot: $('updateDot'),
+
+    // 设置页
+    btnSettingsBack: $('btnSettingsBack'), btnSettingsUpdate: $('btnSettingsUpdate'),
+    setVer: $('setVer'), setUpdState: $('setUpdState'),
+
+    // 检查更新页
+    updTitle: $('updTitle'), updSub: $('updSub'), updInfo: $('updInfo'),
+    btnDoUpdate: $('btnDoUpdate'), btnUpdateClose: $('btnUpdateClose'),
 
     // 模式选择 / 继续对局
     btnModeBack: $('btnModeBack'),
@@ -1681,21 +1801,15 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     return Math.floor(diff / 86400000) + ' 天前';
   }
 
-  /** 短暂的浮动提示 */
+  /** 短暂的浮动提示（ms 默认 1800） */
   let toastTimer = 0;
-  function toast(msg) {
+  function toast(msg, ms) {
     let node = document.getElementById('toastChip');
-    if (!node) {
-      node = document.createElement('div');
-      node.id = 'toastChip';
-      node.className = 'app-update-chip';
-      node.style.pointerEvents = 'none';
-      el.app.appendChild(node);
-    }
+    if (!node) return;
     node.textContent = msg;
     node.classList.remove('hidden');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { node.classList.add('hidden'); }, 1800);
+    toastTimer = setTimeout(function () { node.classList.add('hidden'); }, ms || 1800);
   }
 
   /** 开始 / 重新开始一局；传 savedData 表示继续上次的存档 */
@@ -2094,7 +2208,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     updateTimerUI();
   }
 
-  const ALL_OVERLAYS = ['home', 'mode', 'pause', 'over', 'confirm', 'resume'];
+  const ALL_OVERLAYS = ['home', 'mode', 'pause', 'over', 'confirm', 'resume', 'settings', 'update'];
 
   function showOverlay(which) {
     ALL_OVERLAYS.forEach(function (name) {
@@ -2139,7 +2253,12 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
     // 待开始 / 已结束时，回车或空格快速开局
     if (state === 'home') {
-      if (k === ' ' || k === 'Enter') showOverlay('mode');
+      if (k === 'Escape') { showOverlay('home'); return; }
+      if (k === ' ' || k === 'Enter') {
+        const sub = !el.overlaySettings.classList.contains('hidden') ||
+                    !el.overlayUpdate.classList.contains('hidden');
+        showOverlay(sub ? 'home' : 'mode');
+      }
       return;
     }
     if (state === 'idle') {
@@ -2255,6 +2374,15 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     const key = latestSaveKey();
     if (key) chooseMode(key); else refreshHome();
   });
+  // 主页 → 设置 / 检查更新
+  el.btnHomeSettings.addEventListener('click', function () {
+    setText(el.setVer, appVersionText());
+    showOverlay('settings');
+  });
+  el.btnHomeUpdate.addEventListener('click', openUpdateDialog);
+  el.btnSettingsBack.addEventListener('click', function () { showOverlay('home'); refreshHome(); });
+  el.btnSettingsUpdate.addEventListener('click', openUpdateDialog);
+  el.btnUpdateClose.addEventListener('click', function () { showOverlay('home'); refreshHome(); });
 
   // 模式选择
   el.btnModeBack.addEventListener('click', goHome);
@@ -2602,27 +2730,30 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     return isFinite(v) ? v : 0;
   }
 
-  /** 更新提示按钮的文案与状态 */
-  function appUpdateTip(text, disabled) {
-    const chip = document.getElementById('appUpdateChip');
-    if (!chip) return null;
-    chip.textContent = text;
-    chip.disabled = !!disabled;
-    chip.classList.remove('hidden');
-    return chip;
-  }
+  /** 当前版本的文字形式，例如 v3 */
+  function appVersionText() { return 'v' + readAppVersion(); }
+
+  /** 主页「检查更新」按钮上的小红点 */
+  function markUpdateDot() { if (el.updateDot) el.updateDot.classList.remove('hidden'); }
+  function hideUpdateDot() { if (el.updateDot) el.updateDot.classList.add('hidden'); }
+
+  /** 检查更新页里的状态文字 */
+  function setUpdInfo(text) { setText(el.updInfo, text); }
 
   /** 安全覆盖固定路径上的游戏文件 */
   function installDownloadedFile(entry, ver) {
-    const fail = function () { appUpdateTip('更新失败，点此重试', false); };
+    const fail = function () { setUpdInfo('更新失败，请稍后重试'); };
     plus.io.resolveLocalFileSystemURL('_doc/tetris/', function (dir) {
       entry.moveTo(dir, 'game.html', function () {
         // 记下已热更新到的版本号：启动壳靠它决定加载「自带的」还是「热更新的」那份
         try { plus.storage.setItem('tetris.localver', String(ver)); } catch (e) {}
         // 更新前先把当前存档备份一次，确保换加载路径后数据可恢复
         backupSave();
-        alert('更新完成，App 将自动重启');
-        plus.runtime.restart();
+        setUpdInfo('更新完成，正在重启…');
+        setTimeout(function () {
+          alert('更新完成，App 将自动重启');
+          plus.runtime.restart();
+        }, 300);
       }, fail);
     }, fail);
   }
@@ -2662,13 +2793,18 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
   /** 下载新版本 → 校验 → 覆盖固定路径上的游戏文件 → 重启 App（失败自动换镜像重试） */
   function applyAppUpdate(info) {
-    if (!plus.downloader || !plus.io) { appUpdateTip('当前环境不支持自动更新', false); return; }
-    appUpdateTip('正在下载更新…', true);
+    if (!plus.downloader || !plus.io) { setUpdInfo('当前环境不支持自动更新'); return; }
+    if (el.btnDoUpdate) { el.btnDoUpdate.disabled = true; el.btnDoUpdate.textContent = '正在下载更新…'; }
+    setUpdInfo('正在下载新版本 v' + info.version + '…');
 
     const urls = buildUpdCandidates(info.url);
     let idx = 0;
     (function tryNext() {
-      if (idx >= urls.length) { appUpdateTip('更新失败，点此重试', false); return; }
+      if (idx >= urls.length) {
+        setUpdInfo('更新失败，请稍后重试');
+        if (el.btnDoUpdate) { el.btnDoUpdate.disabled = false; el.btnDoUpdate.textContent = '重试更新'; }
+        return;
+      }
       downloadAndVerify(urls[idx++], info, tryNext);
     })();
   }
@@ -2696,29 +2832,72 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     try { xhr.send(); } catch (e) { finish(null); }
   }
 
-  /** 检查远端版本：主地址不通就换镜像，全都失败就静默放弃（不影响离线游玩） */
-  function checkAppUpdate() {
-    // 没填地址（或不想要自动更新）就直接跳过
-    if (!APP_UPDATE_URL || APP_UPDATE_URL.indexOf('http') !== 0) return;
-
-    const current = readAppVersion();
+  /** 拉取远端版本信息：主地址不通就换镜像，全失败回调 null */
+  function runUpdateCheck(cb) {
+    if (!APP_UPDATE_URL || APP_UPDATE_URL.indexOf('http') !== 0) { cb(null); return; }
     const urls = buildUpdCandidates(APP_UPDATE_URL);
     let idx = 0;
     (function tryNext() {
-      if (idx >= urls.length) return;                       // 全失败：放弃
-      requestVersion(urls[idx++], function (info) {
-        if (!info) { tryNext(); return; }
-        if (parseInt(info.version, 10) <= current) return;  // 已是最新
-        const chip = appUpdateTip('发现新版本 v' + info.version + '，点此更新', false);
-        if (chip) chip.onclick = function () { applyAppUpdate(info); };
-      });
+      if (idx >= urls.length) { cb(null); return; }
+      requestVersion(urls[idx++], function (info) { if (info) cb(info); else tryNext(); });
     })();
   }
 
+  /** 打开「检查更新」页并检查 */
+  function openUpdateDialog() {
+    showOverlay('update');
+    setText(el.updSub, '当前版本 ' + appVersionText());
+    setText(el.updTitle, '检查更新');
+    setUpdInfo('正在检查…');
+    if (el.btnDoUpdate) { el.btnDoUpdate.classList.add('hidden'); el.btnDoUpdate.disabled = false; }
+
+    if (!window.plus) {
+      setUpdInfo('浏览器里没有更新机制，打包成 App 后可用');
+      setText(el.setUpdState, '仅 App 内可用');
+      return;
+    }
+
+    runUpdateCheck(function (info) {
+      const current = readAppVersion();
+      if (!info) {
+        setUpdInfo('检查失败，请确认网络后重试');
+        setText(el.setUpdState, '检查失败');
+        return;
+      }
+      if (parseInt(info.version, 10) <= current) {
+        setUpdInfo('已是最新版本 ✓');
+        setText(el.setUpdState, '已是最新');
+        hideUpdateDot();
+        return;
+      }
+      setUpdInfo('发现新版本 v' + info.version + '（当前 ' + appVersionText() + '）');
+      setText(el.setUpdState, '有新版本 v' + info.version);
+      markUpdateDot();
+      if (el.btnDoUpdate) {
+        el.btnDoUpdate.textContent = '立即更新到 v' + info.version;
+        el.btnDoUpdate.classList.remove('hidden');
+        el.btnDoUpdate.disabled = false;
+        el.btnDoUpdate.onclick = function () { applyAppUpdate(info); };
+      }
+    });
+  }
+
+  /** 启动时静默检查一次：有新版本就弹 3 秒提示 + 主页按钮亮红点 */
+  function launchUpdateHint() {
+    runUpdateCheck(function (info) {
+      if (!info) return;                                     // 没网 / 失败：静默跳过
+      if (parseInt(info.version, 10) <= readAppVersion()) return;
+      markUpdateDot();
+      setText(el.setUpdState, '有新版本 v' + info.version);
+      toast('发现新版本 v' + info.version + '，可在主页「检查更新」里升级', 3200);
+    });
+  }
+
   function initAppUpdate() {
-    if (window.plus) { checkAppUpdate(); return; }
+    setText(el.setVer, appVersionText());
+    if (window.plus) { launchUpdateHint(); return; }
     // 浏览器里不会触发 plusready，等于什么也不做
-    document.addEventListener('plusready', checkAppUpdate, false);
+    document.addEventListener('plusready', launchUpdateHint, false);
   }
 
   /* =======================================================================

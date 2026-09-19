@@ -1,6 +1,6 @@
 {
-  "version": 3,
+  "version": 4,
   "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
-  "size": 111787,
-  "note": "新增主页、分模式存档、继续对局、退出三选项"
+  "size": 119427,
+  "note": "主页/设置/检查更新改版，新增启动更新提示与红点"
 }
