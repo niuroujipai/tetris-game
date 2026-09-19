@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b16" />
 <!-- App 资源版本号：每发布一次新版本把它 +1（发布流程见 HBuilder打包/使用说明.md）
      启动壳与 App 内更新都靠这个标记判断新旧，平时只需改这一处 -->
-<meta name="app-version" content="5" />
+<meta name="app-version" content="6" />
 <title>俄罗斯方块 · 高端版</title>
 <style>
 /* =========================================================================
@@ -708,8 +708,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
             </div>
 
             <div class="set-foot">
-              <div class="set-ver">当前版本 <b id="setVer">v-</b> · <span id="setUpdState">点击下方检查更新</span></div>
-              <button class="btn" id="btnSettingsUpdate" type="button">检查更新</button>
+              <div class="set-ver">当前版本 <b id="setVer">v-</b> · <span id="setUpdState">可在主页「检查更新」升级</span></div>
             </div>
           </div>
         </div>
@@ -1057,7 +1056,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     updateDot: $('updateDot'),
 
     // 设置页
-    btnSettingsBack: $('btnSettingsBack'), btnSettingsUpdate: $('btnSettingsUpdate'),
+    btnSettingsBack: $('btnSettingsBack'),
     setVer: $('setVer'), setUpdState: $('setUpdState'),
 
     // 检查更新页
@@ -2394,7 +2393,6 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   });
   el.btnHomeUpdate.addEventListener('click', openUpdateDialog);
   el.btnSettingsBack.addEventListener('click', function () { showOverlay('home'); refreshHome(); });
-  el.btnSettingsUpdate.addEventListener('click', openUpdateDialog);
   el.btnUpdateClose.addEventListener('click', function () { showOverlay('home'); refreshHome(); });
 
   // 模式选择

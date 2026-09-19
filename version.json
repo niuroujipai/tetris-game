@@ -1,6 +1,6 @@
 {
-  "version": 5,
+  "version": 6,
   "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
-  "size": 121532,
-  "note": "修复热更新覆盖失败（先删旧文件再写入）"
+  "size": 121340,
+  "note": "开关移回游戏界面顶部；设置页精简；修复热更新覆盖失败"
 }
