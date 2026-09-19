@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "url": "https://把你的域名或对象存储地址填这里/tetris/game.html",
+  "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
   "size": 94971,
-  "note": "示例：新增 xxx 功能"
+  "note": "俄罗斯方块游戏"
 }
