@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b16" />
 <!-- App 资源版本号：每发布一次新版本把它 +1（发布流程见 HBuilder打包/使用说明.md）
      启动壳与 App 内更新都靠这个标记判断新旧，平时只需改这一处 -->
-<meta name="app-version" content="7" />
+<meta name="app-version" content="7.5" />
 <title>俄罗斯方块 · 高端版</title>
 <style>
 /* =========================================================================
@@ -511,6 +511,21 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 .gb-best b{ color:var(--gold); font-family:ui-monospace,Consolas,monospace; }
 .gb-btns{ display:flex; gap:6px; flex:0 0 auto; }
 .set-row-plain{ display:block; }
+/* 更新公告 */
+.notice{
+  padding:11px 12px; border-radius:12px;
+  border:1px solid rgba(120,170,255,.3);
+  background:linear-gradient(150deg, rgba(76,201,240,.1), rgba(168,85,247,.06));
+}
+.notice-head{ font-size:13px; font-weight:700; margin-bottom:8px; letter-spacing:1px; }
+.notice-list{ max-height:38vh; overflow-y:auto; }
+.notice-item{ padding:8px 0; border-top:1px dashed rgba(120,160,255,.18); text-align:left; }
+.notice-item:first-child{ border-top:none; padding-top:0; }
+.notice-ver{ font-size:12px; font-weight:700; color:var(--accent); margin-bottom:4px;
+  font-family:ui-monospace,Consolas,monospace; }
+.notice-item:first-child .notice-ver{ color:var(--gold); }
+.notice-ul{ margin:0; padding-left:16px; }
+.notice-ul li{ font-size:11.5px; color:var(--muted); line-height:1.65; margin-bottom:2px; }
 
 /* ---------- 11. 模式选择 ---------- */
 .mode-head{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
@@ -699,6 +714,10 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
             </div>
 
             <div class="set-list">
+              <div class="notice">
+                <div class="notice-head">更新公告</div>
+                <div class="notice-list" id="noticeList"></div>
+              </div>
               <div class="set-row set-row-plain">
                 <div class="set-info">
                   <b>操作开关在游戏界面顶部</b>
@@ -846,6 +865,68 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     m10:     { key: 'm10',     name: '10 分钟超长', seconds: 600 }
   };
   const MODE_ORDER = ['classic', 'speed', 'm3', 'm5', 'm10'];   // 界面展示顺序
+
+  /* -----------------------------------------------------------------------
+     更新公告：每次发版在这里**最前面**加一条（版本号 + 改动点），
+     设置页会把它展示给玩家，更新弹窗里也会显示对应版本的第一条。
+     ----------------------------------------------------------------------- */
+  const CHANGELOG = [
+    {
+      v: '7.5',
+      items: [
+        '修复：极速模式玩到一半方块突然不再下落（消行瞬间自动存档造成的卡死），其它模式同样受益',
+        '新增：设置页「更新公告」，以后每次更新都能看到改了什么'
+      ]
+    },
+    {
+      v: '7',
+      items: [
+        '新增「极速模式」：开局就是普通模式 11 级的速度',
+        '极速模式有独立的最高分与存档，可保存进度下次继续'
+      ]
+    },
+    {
+      v: '6',
+      items: [
+        '幽灵落点 / 音效 / 虚拟按键 三个开关移回游戏界面顶部，随时可切',
+        '修复：连续更新时「覆盖已存在文件」失败的问题（以前只能更新成功一次）',
+        '更新失败时会显示具体原因'
+      ]
+    },
+    {
+      v: '4',
+      items: [
+        '新增主页：开始游戏 / 继续上次游戏 / 各模式最高分',
+        '新增「检查更新」按钮，有新版本时按钮上会出现红点',
+        '启动时用 3 秒提示告知有新版本'
+      ]
+    },
+    {
+      v: '3',
+      items: [
+        '新增分模式存档：退出时点「保存并退出」，下次选同一模式可继续游玩',
+        '切后台、直接退出 App、每 15 秒都会自动保存进度',
+        '退出确认提供三个选择：返回游戏 / 保存并退出 / 退出到模式选择'
+      ]
+    },
+    {
+      v: '2',
+      items: [
+        '手机端布局重构：棋盘靠左、右侧数据栏、下一个方块预览放大',
+        '新增 WASD 键位，左右长按改用内置加速（不再受系统按键延迟影响）',
+        '各模式最高分独立记录'
+      ]
+    }
+  ];
+
+  /** 取某个版本的第一条改动，用于更新弹窗的一行说明 */
+  function changelogNote(version) {
+    const v = parseFloat(version);
+    for (let i = 0; i < CHANGELOG.length; i++) {
+      if (parseFloat(CHANGELOG[i].v) === v) return CHANGELOG[i].items[0];
+    }
+    return '';
+  }
 
   // 7 种方块配色（通透、区分度高）
   const COLORS = {
@@ -1067,7 +1148,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
     // 设置页
     btnSettingsBack: $('btnSettingsBack'),
-    setVer: $('setVer'), setUpdState: $('setUpdState'),
+    setVer: $('setVer'), setUpdState: $('setUpdState'), noticeList: $('noticeList'),
 
     // 检查更新页
     updTitle: $('updTitle'), updSub: $('updSub'), updInfo: $('updInfo'),
@@ -1720,18 +1801,22 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   /** 把当前对局序列化成可存储的对象 */
   function serializeGame() {
     if (!mode) return null;
-    // 若正好卡在消行动画里，先把该消的行真正消掉，避免读档后重复计分
+    // 【重要】若正好卡在消行动画里（此时 active 为空、clearing 有值），
+    // 只在「棋盘副本」上把该消的行消掉，绝不能改动正在进行的对局状态。
+    // 以前这里直接改了 field 并把 clearing 置空，会造成
+    // 「消行瞬间自动存档 → active/clearing 都为 null → 方块再也不下落」的卡死。
+    let snapshot = field;
     if (clearing) {
+      snapshot = field.map(function (row) { return row.slice(); });
       const rows = clearing.rows.slice().sort(function (a, b) { return a - b; });
       for (let i = 0; i < rows.length; i++) {
-        field.splice(rows[i], 1);
-        field.unshift(new Array(COLS).fill(null));
+        snapshot.splice(rows[i], 1);
+        snapshot.unshift(new Array(COLS).fill(null));
       }
-      clearing = null;
     }
     let cells = '';
     for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) cells += (field[r][c] || '.');
+      for (let c = 0; c < COLS; c++) cells += (snapshot[r][c] || '.');
     }
     return {
       v: 1,
@@ -1823,6 +1908,22 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前';
     if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小时前';
     return Math.floor(diff / 86400000) + ' 天前';
+  }
+
+  /** 渲染设置页里的「更新公告」 */
+  function renderNotice() {
+    if (!el.noticeList) return;
+    const cur = readAppVersion();
+    let html = '';
+    CHANGELOG.forEach(function (entry) {
+      const isCur = parseFloat(entry.v) === cur;
+      let lis = '';
+      entry.items.forEach(function (t) { lis += '<li>' + t + '</li>'; });
+      html += '<div class="notice-item">' +
+        '<div class="notice-ver">v' + entry.v + (isCur ? '　· 当前版本' : '') + '</div>' +
+        '<ul class="notice-ul">' + lis + '</ul></div>';
+    });
+    el.noticeList.innerHTML = html;
   }
 
   /** 短暂的浮动提示（ms 默认 1800） */
@@ -2130,7 +2231,9 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
       return;
     }
 
-    if (!active) return;
+    // 保险：正常情况下这里一定有正在下落的方块；万一因为意外出现
+    // 「既没有方块、也没有消行动画」的状态，立刻补一个，避免游戏静默卡死
+    if (!active) { spawn(); return; }
 
     // ---- 自动下落 ----
     // 轻点 ↓ 的那一格已由 softDropStep() 立即处理；只有按住超过 SOFT_HOLD_DELAY
@@ -2401,6 +2504,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   // 主页 → 设置 / 检查更新
   el.btnHomeSettings.addEventListener('click', function () {
     setText(el.setVer, appVersionText());
+    renderNotice();
     showOverlay('settings');
   });
   el.btnHomeUpdate.addEventListener('click', openUpdateDialog);
@@ -2746,15 +2850,18 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     return list;
   }
 
-  /** 读取当前资源版本号（<meta name="app-version">） */
-  function readAppVersion() {
+  /** 读取当前资源版本号（<meta name="app-version">，支持小数如 7.5） */
+  function appVersionRaw() {
     const m = document.querySelector('meta[name="app-version"]');
-    const v = m ? parseInt(m.getAttribute('content'), 10) : 0;
+    return m ? String(m.getAttribute('content') || '').trim() : '';
+  }
+  function readAppVersion() {
+    const v = parseFloat(appVersionRaw());
     return isFinite(v) ? v : 0;
   }
 
-  /** 当前版本的文字形式，例如 v3 */
-  function appVersionText() { return 'v' + readAppVersion(); }
+  /** 当前版本的文字形式，例如 v7.5 */
+  function appVersionText() { return 'v' + (appVersionRaw() || '0'); }
 
   /** 主页「检查更新」按钮上的小红点 */
   function markUpdateDot() { if (el.updateDot) el.updateDot.classList.remove('hidden'); }
@@ -2872,7 +2979,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
       if (xhr.status !== 200) { finish(null); return; }
       let info = null;
       try { info = JSON.parse(xhr.responseText); } catch (e) { info = null; }
-      if (info && info.url && isFinite(info.version) && parseInt(info.version, 10) > 0) finish(info);
+      if (info && info.url && isFinite(info.version) && parseFloat(info.version) > 0) finish(info);
       else finish(null);
     };
     xhr.onerror = function () { finish(null); };
@@ -2912,13 +3019,17 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
         setText(el.setUpdState, '检查失败');
         return;
       }
-      if (parseInt(info.version, 10) <= current) {
+      const cur = current;
+      if (parseFloat(info.version) <= cur) {
         setUpdInfo('已是最新版本 ✓');
         setText(el.setUpdState, '已是最新');
         hideUpdateDot();
         return;
       }
-      setUpdInfo('发现新版本 v' + info.version + '（当前 ' + appVersionText() + '）');
+      // 更新说明：优先用远端 version.json 里的 note，其次用本地公告里对应版本的条目
+      const note = info.note || changelogNote(info.version);
+      setUpdInfo('发现新版本 v' + info.version + '（当前 ' + appVersionText() + '）' +
+        (note ? '\n本次更新：' + note : ''));
       setText(el.setUpdState, '有新版本 v' + info.version);
       markUpdateDot();
       if (el.btnDoUpdate) {
@@ -2934,7 +3045,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   function launchUpdateHint() {
     runUpdateCheck(function (info) {
       if (!info) return;                                     // 没网 / 失败：静默跳过
-      if (parseInt(info.version, 10) <= readAppVersion()) return;
+      if (parseFloat(info.version) <= readAppVersion()) return;
       markUpdateDot();
       setText(el.setUpdState, '有新版本 v' + info.version);
       toast('发现新版本 v' + info.version + '，可在主页「检查更新」里升级', 3200);
@@ -2943,6 +3054,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
   function initAppUpdate() {
     setText(el.setVer, appVersionText());
+    renderNotice();
     if (window.plus) { launchUpdateHint(); return; }
     // 浏览器里不会触发 plusready，等于什么也不做
     document.addEventListener('plusready', launchUpdateHint, false);

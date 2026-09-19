@@ -1,6 +1,6 @@
 {
-  "version": 7,
+  "version": 7.5,
   "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
-  "size": 122255,
-  "note": "新增极速模式（1级=普通11级速度）"
+  "size": 127213,
+  "note": "修复极速模式偶发卡死；设置页新增更新公告"
 }
