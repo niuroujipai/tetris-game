@@ -1,6 +1,6 @@
 {
-  "version": 8.2,
+  "version": 8.3,
   "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
-  "size": 129068,
-  "note": "主页去掉副标题文字"
+  "size": 129888,
+  "note": "速度曲线三段式 + 手机按键延迟降低"
 }
