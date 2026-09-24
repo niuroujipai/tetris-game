@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b16" />
 <!-- App 资源版本号：每发布一次新版本把它 +1（发布流程见 HBuilder打包/使用说明.md）
      启动壳与 App 内更新都靠这个标记判断新旧，平时只需改这一处 -->
-<meta name="app-version" content="8.4" />
+<meta name="app-version" content="8.5" />
 <title>俄罗斯方块 · 高端版</title>
 <style>
 /* =========================================================================
@@ -313,10 +313,12 @@ body.mobile.touch-on .touch-controls{ display:none; }
   font-size:17px; font-weight:800; color:var(--accent);
   font-family:ui-monospace,Consolas,monospace;
 }
-.mode-card:nth-child(2) .mc-icon{ color:#7ee0ff; }
-.mode-card:nth-child(3) .mc-icon{ color:#c084fc; }
-.mode-card:nth-child(4) .mc-icon{ color:var(--gold); }
-.mode-card:nth-child(5) .mc-icon{ color:#ff8f8f; }
+/* 各模式图标配色（按 data-mode 指定，加新模式不用改序号） */
+.mode-card[data-mode="speed"] .mc-icon{ color:#7ee0ff; }
+.mode-card[data-mode="zero"]  .mc-icon{ color:#5eead4; }
+.mode-card[data-mode="m3"]    .mc-icon{ color:#c084fc; }
+.mode-card[data-mode="m5"]    .mc-icon{ color:var(--gold); }
+.mode-card[data-mode="m10"]   .mc-icon{ color:#ff8f8f; }
 .mc-name{ font-size:14px; font-weight:700; }
 .mc-desc{ font-size:11px; color:var(--muted); line-height:1.45; }
 .mc-best{ font-size:10.5px; color:var(--muted); margin-top:2px; }
@@ -567,6 +569,121 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 /* 退出确认有三个按钮：两个一行，第三个换行占满，避免挤在一起 */
 #confirmBtns{ flex-wrap:wrap; }
 #confirmBtns .btn{ flex:1 1 45%; min-width:120px; }
+
+/* =========================================================================
+   7. 无重力模式（暂存）与成就系统
+   ========================================================================= */
+
+/* 无重力模式：不能手动下降，隐藏「下落一格」按钮 */
+body.zero-mode .tbtn[data-act="softdrop"]{ display:none; }
+
+/* 暂存区：挂在「下一个方块」预览下方（只在不重力模式显示） */
+.hold-box{ display:flex; flex-direction:column; align-items:center; gap:6px; width:100%; }
+.hold-btn{
+  width:100%; padding:8px 0; border-radius:10px;
+  font-size:12px; font-weight:800; letter-spacing:2px; color:#061018;
+  background:linear-gradient(135deg,#5eead4,#22d3ee);
+  box-shadow:0 6px 16px rgba(34,211,238,.32);
+  transition:transform .08s ease, filter .12s ease;
+}
+.hold-btn:active{ transform:scale(.95); filter:brightness(1.08); }
+.hold-btn.used{ opacity:.4; }
+
+/* 主页「成就」入口按钮（金色调，和普通按钮区分开） */
+.home-btn.achv-btn{
+  background:linear-gradient(135deg,rgba(250,204,21,.2),rgba(250,204,21,.05));
+  border-color:rgba(250,204,21,.5);
+}
+.home-btn.achv-btn:hover{ border-color:rgba(255,236,140,.9); }
+.home-btn.achv-btn .hb-main{ color:var(--gold); }
+
+/* 全屏成就界面：铺满整屏（不像模式选择那样只占中间一块） */
+#overlayAchv{ padding:0; }
+.achv-card{
+  width:100%; max-width:none; height:100%; max-height:none;
+  border-radius:0; padding:14px 14px 16px;
+  display:flex; flex-direction:column; gap:10px;
+  overflow:hidden;
+  animation:none;
+}
+.achv-top{ display:flex; align-items:center; gap:10px; flex:0 0 auto; }
+.achv-top .mode-title{ flex:1 1 auto; }
+.achv-count{ font-size:12.5px; font-weight:700; color:var(--gold);
+  font-family:ui-monospace,Consolas,monospace; white-space:nowrap; }
+.achv-bar{ height:7px; border-radius:99px; background:rgba(255,255,255,.07); overflow:hidden; flex:0 0 auto; }
+.achv-bar i{ display:block; height:100%; width:0; border-radius:99px;
+  background:linear-gradient(90deg,#facc15,#fde68a);
+  box-shadow:0 0 12px rgba(250,204,21,.55); transition:width .35s ease; }
+.achv-tabs{ display:flex; gap:8px; flex:0 0 auto; }
+.achv-tab{
+  flex:1 1 0; padding:8px 0; border-radius:10px;
+  font-size:13px; font-weight:700; letter-spacing:1px;
+  border:1px solid var(--panel-line); color:var(--muted); background:rgba(255,255,255,.04);
+}
+.achv-tab.active{
+  color:#061018; border-color:transparent;
+  background:linear-gradient(135deg,var(--accent),#7ee0ff);
+  box-shadow:0 0 14px rgba(76,201,240,.32);
+}
+.achv-list{ flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
+.achv-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:9px; }
+.achv-item{
+  position:relative; overflow:hidden;
+  display:flex; flex-direction:column; align-items:flex-start; gap:3px;
+  padding:11px 12px; border-radius:13px; text-align:left;
+  border:1px solid var(--panel-line);
+  background:linear-gradient(150deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+  transition:transform .16s ease;
+}
+.achv-item .ai-ico{ font-size:15px; line-height:1; }
+.achv-item .ai-name{ font-size:13.5px; font-weight:700; }
+.achv-item .ai-tag{ font-size:10.5px; color:var(--muted); }
+/* 未达成：灰暗、锁住、不可点击，也看不到条件 */
+.achv-item.locked{ opacity:.52; cursor:not-allowed; }
+.achv-item:disabled{ opacity:1; }        /* 覆盖全局 button:disabled，避免叠加得过暗 */
+.achv-item.locked .ai-name{ color:var(--muted); }
+/* 已达成：金色 + 动态呼吸光边框 */
+.achv-item.unlocked{
+  cursor:pointer;
+  border-color:rgba(250,204,21,.7);
+  background:linear-gradient(150deg,rgba(250,204,21,.16),rgba(250,204,21,.03));
+}
+.achv-item.unlocked:hover{ transform:translateY(-2px); }
+.achv-item.unlocked .ai-tag{ color:var(--gold); }
+.achv-item.unlocked::after{
+  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  border:1.5px solid rgba(255,236,140,.95);
+  box-shadow:0 0 20px rgba(250,204,21,.6), inset 0 0 14px rgba(250,204,21,.18);
+  opacity:.3; will-change:opacity;
+  animation:goldBreath 2.3s ease-in-out infinite;
+}
+@keyframes goldBreath{ 0%,100%{ opacity:.25 } 50%{ opacity:1 } }
+/* 成就详情（点已解锁的成就才能看到达成条件） */
+.achv-detail{
+  flex:1 1 auto; min-height:0; overflow-y:auto; padding:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:11px;
+  text-align:center;
+}
+.achv-d-name{ font-size:20px; font-weight:800; color:var(--gold); text-shadow:0 0 16px rgba(250,204,21,.45); }
+.achv-d-desc{ font-size:13px; line-height:1.75; max-width:440px; }
+.achv-d-time{ font-size:11.5px; color:var(--muted); }
+.achv-foot{
+  flex:0 0 auto; font-size:11px; color:var(--muted); text-align:center;
+  border-top:1px dashed var(--panel-line); padding-top:8px; line-height:1.6;
+}
+
+/* 成就解锁提示：金色，1.5 秒后自动消失 */
+.achv-toast{
+  position:fixed; left:50%; top:12px; transform:translateX(-50%);
+  z-index:60; max-width:88vw; padding:10px 16px; border-radius:13px;
+  text-align:center; pointer-events:none;
+  background:linear-gradient(150deg,#fde68a,#f59e0b);
+  color:#2a1a00; font-size:13px; font-weight:800; letter-spacing:.5px;
+  box-shadow:0 14px 34px rgba(250,204,21,.45), inset 0 1px 0 rgba(255,255,255,.6);
+  animation:achvPop .3s cubic-bezier(.2,1.4,.4,1);
+}
+.achv-toast small{ display:block; font-size:11px; font-weight:600; opacity:.82; margin-top:3px; line-height:1.5; }
+@keyframes achvPop{ from{ opacity:0; transform:translate(-50%,-16px) scale(.9);} to{ opacity:1; transform:translate(-50%,0) scale(1);} }
 </style>
 </head>
 <body>
@@ -623,6 +740,13 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
                 <span class="mc-best">最高分 <b>0</b></span>
                 <span class="mc-save hidden">⏱ 有存档</span>
               </button>
+              <button class="mode-card" data-mode="zero" type="button">
+                <span class="mc-icon">0g</span>
+                <span class="mc-name">无重力模式</span>
+                <span class="mc-desc">方块悬在最上方不会自己掉，慢慢调好角度再按 ⤓ 一刀落底；可暂存一个方块</span>
+                <span class="mc-best">最高分 <b>0</b></span>
+                <span class="mc-save hidden">⏱ 有存档</span>
+              </button>
               <button class="mode-card" data-mode="m3" type="button">
                 <span class="mc-icon">3′</span>
                 <span class="mc-name">3 分钟极速</span>
@@ -647,7 +771,9 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
             </div>
             <div class="mode-foot">
               <b>手机操作</b>：默认用下方按键；打开设置里的「虚拟按键」后按键隐藏，改为手指在棋盘上操作
-              （左右滑动移动 · 向下滑动加速下落 · 连续下滑两次直接落底 · 点击 / 上滑旋转）
+              （左右滑动移动 · 向下滑动加速下落 · 连续下滑两次直接落底 · 点击 / 上滑旋转）<br />
+              <b>无重力模式</b>：没有自动下落，也不能手动下降，摆好位置按 ⤓ 直接落底；
+              右下角有「暂存」按钮（手机手势：双击 = 暂存 · 下滑 = 直接落底），每个方块只能暂存一次
             </div>
           </div>
         </div>
@@ -713,6 +839,12 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
               <span class="hb-sub" id="homeResumeSub"></span>
             </button>
 
+            <!-- 成就入口：未解锁的看不到条件，解锁后点开可以看达成条件 -->
+            <button class="home-btn achv-btn" id="btnHomeAchv" type="button">
+              <span class="hb-main">🏆 成 就</span>
+              <span class="hb-sub" id="homeAchvSub">已解锁 0 / 41</span>
+            </button>
+
             <div class="home-panel">
               <div class="home-panel-title">各模式最高分</div>
               <div class="home-bests" id="homeBests"></div>
@@ -752,7 +884,16 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
                 <div class="set-info">
                   <b>手机操作说明</b>
                   <span>默认用下方按键操作；打开「虚拟按键」后按键隐藏，改为手指在棋盘上操作：
-                    左右滑动移动 · 向下滑动加速下落 · 连续下滑两次直接落底 · 点击 / 上滑旋转。</span>
+                    左右滑动移动 · 向下滑动加速下落 · 连续下滑两次直接落底 · 点击 / 上滑旋转。<br />
+                    无重力模式：双击棋盘 = 暂存方块 · 下滑 = 直接落底。</span>
+                </div>
+              </div>
+              <div class="set-row set-row-plain">
+                <div class="set-info">
+                  <b>成就</b>
+                  <span>主页「继续上次游戏」下面就是成就入口。未达成的成就锁着、看不到条件；
+                    达成后边框变成动态金色，点开可以看到达成条件与解锁时间。成就是永久累计的，
+                    换模式、清空某局存档都不会丢。</span>
                 </div>
               </div>
             </div>
@@ -794,6 +935,31 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
           </div>
         </div>
 
+        <!-- 成就（全屏界面：铺满整屏，分「模式 / 技巧 / 累计」三页） -->
+        <div class="overlay hidden" id="overlayAchv">
+          <div class="overlay-card achv-card">
+            <div class="achv-top">
+              <button class="mini-btn" id="btnAchvBack" type="button">‹ 主页</button>
+              <h2 class="mode-title">成就</h2>
+              <div class="achv-count" id="achvCount">已解锁 0 / 41</div>
+            </div>
+            <div class="achv-bar"><i id="achvBar"></i></div>
+            <div class="achv-tabs" id="achvTabs">
+              <button class="achv-tab active" data-cat="mode" type="button">模式</button>
+              <button class="achv-tab" data-cat="skill" type="button">技巧</button>
+              <button class="achv-tab" data-cat="total" type="button">累计</button>
+            </div>
+            <div class="achv-list" id="achvList"></div>
+            <div class="achv-detail hidden" id="achvDetail">
+              <div class="achv-d-name" id="achvDName">成就</div>
+              <div class="achv-d-desc" id="achvDDesc">达成条件</div>
+              <div class="achv-d-time" id="achvDTime"></div>
+              <button class="btn" id="btnAchvDetailClose" type="button">返回列表</button>
+            </div>
+            <div class="achv-foot" id="achvFoot">未达成的成就锁着，看不到条件；达成后边框会变成动态金色，点开就能看到达成条件。</div>
+          </div>
+        </div>
+
       </div>
 
       <!-- 竖排「下一个方块」预览栏：桌面端与手机端都放在主棋盘右侧，
@@ -807,6 +973,13 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
         </div>
         <span class="sp-label">NEXT</span>
         <canvas id="previewSide" width="68" height="204"></canvas>
+
+        <!-- 暂存（Hold）：只在无重力模式显示，就挂在「下一个方块」下面 -->
+        <div class="hold-box hidden" id="holdBox">
+          <span class="sp-label">暂存</span>
+          <canvas id="previewHold" width="68" height="68"></canvas>
+          <button class="hold-btn" id="btnHold" type="button">暂 存</button>
+        </div>
       </div>
     </div>
   </main>
@@ -829,6 +1002,9 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
   <!-- 浮动提示（保存成功 / 发现新版本等） -->
   <div class="toast-chip hidden" id="toastChip"></div>
+
+  <!-- 成就解锁提示：金色，1.5 秒后自动消失（多个同时解锁会依次弹） -->
+  <div class="achv-toast hidden" id="achvToast"></div>
 
 </div>
 
@@ -875,29 +1051,41 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   const LINES_PER_LEVEL = 10;   // 每消除 10 行升 1 级
   const SCORE_TABLE = { 1: 100, 2: 300, 3: 500, 4: 800 }; // 标准街机消行分
 
-  const BEST_KEY = 'tetris.best.v2';        // 各模式最高分（JSON：{classic,m3,m5,m10}）
+  const BEST_KEY = 'tetris.best.v2';        // 各模式最高分（JSON：{classic,speed,zero,m3,m5,m10}）
   const BEST_KEY_OLD = 'tetris.best.v1';    // 旧版共用的单个最高分，用于迁移
   const SETTINGS_KEY = 'tetris.settings.v1'; // 界面设置存储键
+  const ACHV_KEY = 'tetris.achv.v1';        // 成就与累计统计（永久保留，不随清档丢失）
 
   const PANEL_W = 238;          // 桌面端右侧信息面板宽度（与 CSS .panel 一致）
   const STAGE_GAP = 16;         // 棋盘区与面板之间的间距（与 CSS .stage 的 gap 一致）
 
-  // 五种模式：经典无尽 + 极速 + 三档限时
+  // 六种模式：经典无尽 + 极速 + 无重力 + 三档限时
   const MODES = {
     classic: { key: 'classic', name: '经典无尽', seconds: 0 },
     // 极速模式：等级 1 直接按「普通模式 11 级」的速度下落（speedOffset = 10）
     speed:   { key: 'speed',   name: '极速模式', seconds: 0, speedOffset: 10 },
+    // 无重力模式：方块悬停在顶部不会自动下落，也不能手动下降（noGravity），
+    // 只能左右移动 + 旋转，满意后按 ⤓ 直接落底；支持暂存（hold）
+    zero:    { key: 'zero',    name: '无重力模式', seconds: 0, noGravity: true, hold: true },
     m3:      { key: 'm3',      name: '3 分钟极速', seconds: 180 },
     m5:      { key: 'm5',      name: '5 分钟标准', seconds: 300 },
     m10:     { key: 'm10',     name: '10 分钟超长', seconds: 600 }
   };
-  const MODE_ORDER = ['classic', 'speed', 'm3', 'm5', 'm10'];   // 界面展示顺序
+  const MODE_ORDER = ['classic', 'speed', 'zero', 'm3', 'm5', 'm10'];   // 界面展示顺序
 
   /* -----------------------------------------------------------------------
      更新公告：每次发版在这里**最前面**加一条（版本号 + 改动点），
      设置页会把它展示给玩家，更新弹窗里也会显示对应版本的第一条。
      ----------------------------------------------------------------------- */
   const CHANGELOG = [
+    {
+      v: '8.5',
+      items: [
+        '新增「无重力模式」：方块悬在顶部不会自己掉，摆好位置按 ⤓ 一刀落底；可以暂存一个方块（预览框下面就是暂存区和按钮）',
+        '新增成就系统：主页「继续上次游戏」下面可以查看成就，共 41 个，分「模式 / 技巧 / 累计」三页；未达成的锁着看不到条件，达成后边框变动态金色，点开即可看条件',
+        '达成成就时游戏里会弹一条金色提示（1.5 秒）；成就与累计数据永久保存，换模式、清存档都不会丢'
+      ]
+    },
     {
       v: '8.4',
       items: [
@@ -984,6 +1172,76 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     }
     return '';
   }
+
+  /* -----------------------------------------------------------------------
+     成就表（共 41 个，分三类：模式 / 技巧 / 累计）
+     · cat   : 分类，决定在成就界面的哪一页
+     · mode  : 限定模式（不写表示任意模式都能解锁）
+     · name  : 成就名
+     · desc  : 达成条件（**未解锁时不会显示**，只有达成了点开才看得到）
+     新增成就只要往这个数组里加一条即可，界面与统计会自动带上。
+     ----------------------------------------------------------------------- */
+  const ACHV = [
+    /* ---- 模式类：每个模式自己的目标 ---- */
+    { id: 'c_lv20',   cat: 'mode', mode: 'classic', name: '永不停歇', desc: '在经典无尽模式中达到等级 20' },
+    { id: 'c_score',  cat: 'mode', mode: 'classic', name: '堆叠高手', desc: '在经典无尽模式中单局得分突破 66666' },
+    { id: 'c_max',    cat: 'mode', mode: 'classic', name: '无尽之巅', desc: '在经典无尽模式中到达满级（30 级）' },
+    { id: 'c_escape', cat: 'mode', mode: 'classic', name: '死里逃生', desc: '方块快要顶到顶部时，一次消除 4 行救场' },
+    { id: 's_lines',  cat: 'mode', mode: 'speed',   name: '极速入门', desc: '在极速模式中单局消除 50 行' },
+    { id: 's_score',  cat: 'mode', mode: 'speed',   name: '疾风之手', desc: '在极速模式中单局得分突破 30000' },
+    { id: 's_max',    cat: 'mode', mode: 'speed',   name: '极限之巅', desc: '在极速模式中到达满级（30 级）' },
+    { id: 'm3_done',  cat: 'mode', mode: 'm3',      name: '三分钟冲锋', desc: '完整打完一局 3 分钟极速模式' },
+    { id: 'm3_a',     cat: 'mode', mode: 'm3',      name: '闪电选手', desc: '在 3 分钟极速模式中单局得分突破 10000' },
+    { id: 'm3_b',     cat: 'mode', mode: 'm3',      name: '分秒必争', desc: '在 3 分钟极速模式中单局得分突破 15000' },
+    { id: 'm5_done',  cat: 'mode', mode: 'm5',      name: '攻守兼备', desc: '完整打完一局 5 分钟标准模式' },
+    { id: 'm5_a',     cat: 'mode', mode: 'm5',      name: '稳中求胜', desc: '在 5 分钟标准模式中单局得分突破 20000' },
+    { id: 'm5_b',     cat: 'mode', mode: 'm5',      name: '均衡王者', desc: '在 5 分钟标准模式中单局得分突破 25000' },
+    { id: 'm10_done', cat: 'mode', mode: 'm10',     name: '耐力试炼', desc: '完整打完一局 10 分钟超长模式' },
+    { id: 'm10_a',    cat: 'mode', mode: 'm10',     name: '持久战专家', desc: '在 10 分钟超长模式中单局得分突破 50000' },
+    { id: 'm10_b',    cat: 'mode', mode: 'm10',     name: '耐力之王', desc: '在 10 分钟超长模式中单局得分突破 60000' },
+    { id: 'z_time',   cat: 'mode', mode: 'zero',    name: '静坐修行', desc: '在无重力模式中单局游玩满 15 分钟' },
+    { id: 'z_nohold', cat: 'mode', mode: 'zero',    name: '精准布局', desc: '在无重力模式中不使用暂存，单局打出一次四消' },
+    { id: 'z_clear',  cat: 'mode', mode: 'zero',    name: '完美清空', desc: '在无重力模式中把整个棋盘全部清空（开局本来就是空白，不算）' },
+
+    /* ---- 技巧类：单局操作表现 ---- */
+    { id: 'k_combo5',  cat: 'skill', name: '连击达人', desc: '连续消除 5 次' },
+    { id: 'k_combo10', cat: 'skill', name: '连击之王', desc: '连续消除 10 次' },
+    { id: 'k_lines150', cat: 'skill', name: '清除大师', desc: '单局累计消除 150 行' },
+    { id: 'k_tetris2', cat: 'skill', name: '连续四消', desc: '连续 2 次打出四消（Tetris）' },
+    { id: 'k_drop10',  cat: 'skill', name: '快速落子', desc: '10 秒内连续放下 10 个方块' },
+    { id: 'k_drop20',  cat: 'skill', name: '手速之王', desc: '10 秒内连续放下 20 个方块' },
+    { id: 'k_first30', cat: 'skill', name: '一鸣惊人', desc: '开局 30 秒内打出一次四消' },
+    { id: 'k_alltype', cat: 'skill', name: '满堂彩', desc: '单局内 1 行、2 行、3 行、4 行消除各至少出现一次' },
+    { id: 'k_tetris100', cat: 'skill', name: '四消狂魔', desc: '累计打出 100 次四消' },
+    { id: 'k_miser',   cat: 'skill', name: '铁公鸡', desc: '单局得分达到 10000 时，一次都没有用过硬降' },
+    { id: 'k_anchor',  cat: 'skill', name: '定海神针', desc: '单局内触发落地延迟微调 20 次（落地后又移动或旋转）' },
+    { id: 'k_soft500', cat: 'skill', name: '叠罗汉', desc: '单局内软降累计下落 500 格' },
+    { id: 'k_1000',    cat: 'skill', name: '零的突破', desc: '单局得分首次突破 1000' },
+
+    /* ---- 累计类：长期积累 ---- */
+    { id: 't_modes',    cat: 'total', name: '多面玩家', desc: '6 种游戏模式全部至少游玩 1 次' },
+    { id: 't_achv20',   cat: 'total', name: '我是高手', desc: '累计解锁 20 个成就' },
+    { id: 't_zerolines', cat: 'total', name: '练习狂人', desc: '无重力模式累计消除 500 行' },
+    { id: 't_games',    cat: 'total', name: '千局试炼', desc: '累计完整打完 1000 局游戏' },
+    { id: 't_lines',    cat: 'total', name: '消行收藏家', desc: '游戏累计消除 1000 行' },
+    { id: 't_time',     cat: 'total', name: '老牌玩家', desc: '累计游玩时长超过 10 小时' },
+    { id: 't_night',    cat: 'total', name: '夜猫子', desc: '在凌晨 0:00–5:00 完成一局游戏' },
+    { id: 't_weekend',  cat: 'total', name: '周末战士', desc: '在周六或周日完成一局游戏' },
+    { id: 't_all',      cat: 'total', name: '全成就大师', desc: '解锁其它全部成就' }
+  ];
+
+  // id → 成就定义，判定时用 O(1) 查表
+  const ACHV_BY_ID = {};
+  ACHV.forEach(function (a) { ACHV_BY_ID[a.id] = a; });
+
+  // 成就界面三个分页 + 完成一个成就所需的条件阈值
+  const ACHV_CATS = [
+    { key: 'mode',  name: '模式' },
+    { key: 'skill', name: '技巧' },
+    { key: 'total', name: '累计' }
+  ];
+  const ACHV_META_20 = 20;                       // 「我是高手」需要解锁的成就数
+  const ACHV_TOTAL = ACHV.length;                // 成就总数（界面显示 x / 总数）
 
   // 7 种方块配色（通透、区分度高）
   const COLORS = {
@@ -1122,6 +1380,8 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
       if (n >= 4) this.tone(1318, 0.34, 'sawtooth', 0.05, 0.2);
     },
     levelup: function () { [523, 659, 784, 1046].forEach(function (f, i) { SFX.tone(f, 0.14, 'triangle', 0.06, i * 0.07); }); },
+    hold:    function () { this.tone(520, 0.07, 'triangle', 0.06, 0, 700); },
+    achv:    function () { [660, 880, 1320].forEach(function (f, i) { SFX.tone(f, 0.15, 'triangle', 0.07, i * 0.09); }); },
     start:   function () { [523, 784].forEach(function (f, i) { SFX.tone(f, 0.12, 'triangle', 0.06, i * 0.1); }); },
     over:    function () { [440, 349, 262, 196].forEach(function (f, i) { SFX.tone(f, 0.3, 'sawtooth', 0.06, i * 0.15); }); }
   };
@@ -1145,8 +1405,34 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   let score = 0;                // 本局得分
   let lines = 0;                // 本局消除行数
   let level = 1;                // 当前等级
-  let bestMap = { classic: 0, speed: 0, m3: 0, m5: 0, m10: 0 };  // 各模式独立的最高分
+  let bestMap = { classic: 0, speed: 0, zero: 0, m3: 0, m5: 0, m10: 0 };  // 各模式独立的最高分
   let timerRemain = 0;          // 限时模式剩余毫秒
+
+  /* ---------- 无重力模式的暂存（Hold） ---------- */
+  let holdType = null;          // 暂存区里的方块类型（null = 空的）
+  let holdUsed = false;         // 当前这块是否已经用过暂存（每个方块只能暂存一次）
+
+  /* ---------- 本局统计（成就判定用，每局开始清零） ---------- */
+  let gPlayMs = 0;              // 本局已游玩时长（暂停不计）
+  let gCombo = 0;               // 当前连续消行次数（没消行就断）
+  let gLastTetris = false;      // 上一次消行是不是四消（判「连续四消」）
+  let gClearTypes = { 1: false, 2: false, 3: false, 4: false };  // 本局出现过哪些行数的消除
+  let gHardDrop = false;        // 本局是否用过硬降（判「铁公鸡」）
+  let gSoftCells = 0;           // 本局软降累计下落格数（判「叠罗汉」）
+  let gHoldUsed = false;        // 本局是否用过暂存（判「精准布局」）
+  let gAdjusts = 0;             // 本局落地延迟微调次数（判「定海神针」）
+  let gLockTimes = [];          // 最近 20 次方块锁定的时刻（判「快速落子 / 手速之王」）
+
+  /* ---------- 全局累计统计 + 已解锁成就（永久保存） ---------- */
+  const stats = {
+    unlocked: {},               // { 成就id: 解锁时间戳 }
+    games: 0,                   // 累计完整打完的局数
+    lines: 0,                   // 累计消除行数
+    ms: 0,                      // 累计游玩时长（毫秒）
+    tetris: 0,                  // 累计四消次数
+    plays: { classic: 0, speed: 0, zero: 0, m3: 0, m5: 0, m10: 0 },      // 各模式游玩局数
+    modeLines: { classic: 0, speed: 0, zero: 0, m3: 0, m5: 0, m10: 0 }   // 各模式累计消行
+  };
 
   let dropAcc = 0;              // 下落计时累加器
   let lockAcc = 0;              // 锁定延迟累加器
@@ -1190,6 +1476,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     overlayResume: $('overlayResume'),
     overlaySettings: $('overlaySettings'),
     overlayUpdate: $('overlayUpdate'),
+    overlayAchv: $('overlayAchv'),
 
     // 游戏内顶部条 + 右侧数据栏
     mScore: $('mScore'), mLines: $('mLines'), mLevel: $('mLevel'),
@@ -1202,6 +1489,17 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     homeResumeSub: $('homeResumeSub'), homeBests: $('homeBests'),
     btnHomeSettings: $('btnHomeSettings'), btnHomeUpdate: $('btnHomeUpdate'),
     updateDot: $('updateDot'),
+    btnHomeAchv: $('btnHomeAchv'), homeAchvSub: $('homeAchvSub'),
+
+    // 成就界面
+    btnAchvBack: $('btnAchvBack'), achvCount: $('achvCount'), achvBar: $('achvBar'),
+    achvTabs: $('achvTabs'), achvList: $('achvList'), achvFoot: $('achvFoot'),
+    achvDetail: $('achvDetail'), achvDName: $('achvDName'), achvDDesc: $('achvDDesc'),
+    achvDTime: $('achvDTime'), btnAchvDetailClose: $('btnAchvDetailClose'),
+    achvToast: $('achvToast'),
+
+    // 暂存（无重力模式）
+    holdBox: $('holdBox'), previewHold: $('previewHold'), btnHold: $('btnHold'),
 
     // 设置页
     btnSettingsBack: $('btnSettingsBack'),
@@ -1236,6 +1534,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
   let boardCtx = el.canvas.getContext('2d');
   let previewSideCtx = el.previewSide.getContext('2d');
+  let previewHoldCtx = el.previewHold.getContext('2d');
 
   /* =======================================================================
      七、通用工具函数
@@ -1364,6 +1663,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     el.sidePreview.style.width = colW + 'px';
     previewSideCtx = setupCanvas(el.previewSide, previewSideCtx, pcs * 4, pcs * 12);
     drawPreview();
+    drawHold();
   }
 
   /* =======================================================================
@@ -1554,6 +1854,24 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     drawPreviewVertical(previewSideCtx, PCS);
   }
 
+  /**
+   * 刷新「暂存」小框（只有无重力模式用得到）。
+   * 用 4×4 的槽位绘制，直接复用 drawPieceInSlot，画风与预览方块完全一致。
+   */
+  function drawHold() {
+    if (!el.previewHold) return;
+    const cell = PCS;
+    const w = cell * 4, h = cell * 4;
+    previewHoldCtx = setupCanvas(el.previewHold, previewHoldCtx, w, h);
+    previewHoldCtx.clearRect(0, 0, w, h);
+    previewHoldCtx.fillStyle = 'rgba(255,255,255,.03)';
+    rrPath(previewHoldCtx, 0, 0, w, h, 8);
+    previewHoldCtx.fill();
+    if (holdType) drawPieceInSlot(previewHoldCtx, holdType, 0, 0, cell);
+    // 当前这块已经暂存过了 → 按钮变暗，提示「这块不能再暂存了」
+    if (el.btnHold) el.btnHold.classList.toggle('used', !!holdUsed);
+  }
+
   /* =======================================================================
      十、核心玩法逻辑
      ======================================================================= */
@@ -1604,11 +1922,16 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   /** 消行得分（受等级倍率影响） */
   function addLineScore(base) {
     score += Math.round(base * levelMultiplier());
+    achvOnScore();
   }
 
   /** 降落加分（软降 1 分/格、硬降 2 分/格，不吃倍率） */
   function addDropScore(n) {
     score += n;
+    // 软降是一格一格加的，这里立刻刷一下分数显示，
+    // 否则长按软降时分数要等这块锁定才跳（看起来像没加分）
+    setText(el.mScore, score);
+    achvOnScore();
   }
 
   /**
@@ -1617,11 +1940,13 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
    */
   function softDropStep() {
     if (state !== 'playing' || !active || clearing) return false;
+    if (mode && mode.noGravity) return false;   // 无重力模式：完全不能手动下降
     if (canPlace(active.matrix, active.x, active.y + 1)) {
       active.y++;
       lockResets = 0;
       addDropScore(1);
       dropAcc = 0;
+      achvSoftCell();
       return true;
     }
     return false;
@@ -1635,6 +1960,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   /** 开始按住软降（记录起始时刻，连续软降要等 SOFT_HOLD_DELAY 之后才生效） */
   function startSoft(source, immediate) {
     if (state !== 'playing' || confirmCtx) return;   // 非游戏中或确认弹窗打开时不允许软降
+    if (mode && mode.noGravity) return;              // 无重力模式没有软降
     softHeld = true;
     softSource = source || '';
     softHoldStart = immediate ? (nowMs() - SOFT_HOLD_DELAY) : nowMs();
@@ -1706,6 +2032,8 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     if (!canPlace(active.matrix, active.x, active.y + 1) && lockResets < MAX_LOCK_RESETS) {
       lockAcc = 0;
       lockResets++;
+      gAdjusts++;                                  // 本局累计微调次数（成就「定海神针」）
+      if (gAdjusts >= 20) unlockAchv('k_anchor');
     }
   }
 
@@ -1754,17 +2082,44 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   /** 直接落底并立即锁定 */
   function hardDrop() {
     if (state !== 'playing' || !active || clearing) return;
+    gHardDrop = true;      // 本局用过硬降（成就「铁公鸡」要求全程不用）
     let dist = 0;
     while (canPlace(active.matrix, active.x, active.y + 1)) { active.y++; dist++; }
     if (dist > 0) addDropScore(dist * 2);
     lockPiece();
   }
 
+  /**
+   * 暂存（Hold）：无重力模式专属，每个方块只能用一次。
+   * · 暂存区是空的 → 把当前方块收进去，队列里的下一个方块直接落到出生点；
+   * · 暂存区已有方块 → 两块交换，仓库里那块重新悬停在出生点。
+   */
+  function holdPiece() {
+    if (state !== 'playing' || !active || clearing) return;
+    if (!mode || !mode.hold) return;     // 只有无重力模式有暂存
+    if (holdUsed) return;                // 每个方块只能暂存一次
+    const cur = active.type;
+    holdUsed = true;
+    gHoldUsed = true;
+    const back = holdType;
+    holdType = cur;
+    active = null;                       // 先把当前方块摘下来，再让新的顶上
+    if (back) spawnType(back); else spawn();
+    SFX.hold();
+    drawHold();
+    drawPreview();
+    updateHUD();
+  }
+
   /** 生成新方块（队列取一个，并补足预览队列） */
   function spawn() {
     const type = queue.shift();
     queue.push(nextType());
+    spawnType(type);
+  }
 
+  /** 按指定类型在出生点生成方块（暂存交换时用，不消耗队列） */
+  function spawnType(type) {
     const m = ROT[type][0];
     const x = Math.floor((COLS - m[0].length) / 2);
     const y = -topFilledRow(m);   // 让方块最上面一行正好贴在第 0 行
@@ -1804,6 +2159,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     dropAcc = 0;
     lockAcc = 0;
     lockResets = 0;
+    holdUsed = false;    // 有方块锁定了，新的一块又可以暂存一次
     SFX.lock();
 
     // 找出所有满行
@@ -1825,6 +2181,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
         level = newLevel;
         SFX.levelup();     // 满级那一次也会响，之后 newLevel 不再变大
       }
+      achvLevelUp();
       SFX.clear(full.length);
       clearing = { rows: full, t: 0 };   // 进入消行闪烁动画
       updateHUD();
@@ -1832,6 +2189,10 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
       updateHUD();
       spawn();
     }
+
+    // 方块落地后的成就判定（连击 / 四消 / 快速落子 / 死里逃生 / 各种得分阈值）
+    // 注意：此刻满行还没真正删除（要等消行动画结束），所以棋盘状态正是「落定那一刻」的样子
+    achvAfterLock(full);
   }
 
   /** 消行动画结束：真正删除满行并从顶部补空行 */
@@ -1842,7 +2203,25 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
       field.unshift(new Array(COLS).fill(null));
     }
     clearing = null;
+    // 无重力模式「完美清空」：本局消过行之后把整个棋盘清空（开局本来就空白，不算）
+    if (mode && mode.key === 'zero' && lines > 0 && isBoardEmpty()) unlockAchv('z_clear');
     spawn();
+  }
+
+  /** 棋盘是否已经完全清空 */
+  function isBoardEmpty() {
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) if (field[r][c]) return false;
+    }
+    return true;
+  }
+
+  /** 棋盘上已有方块的最上面一行行号（0 = 贴着顶部）；没有方块时返回 ROWS */
+  function stackTopRow() {
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) if (field[r][c]) return r;
+    }
+    return ROWS;
   }
 
   /* =======================================================================
@@ -1865,7 +2244,22 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     endSoft();
     stopAutoMove();
     timerRemain = 0;
+
+    // 本局统计与暂存区一起清零（成就判定只统计「这一局」）
+    holdType = null;
+    holdUsed = false;
+    gPlayMs = 0;
+    gCombo = 0;
+    gLastTetris = false;
+    gClearTypes = { 1: false, 2: false, 3: false, 4: false };
+    gHardDrop = false;
+    gSoftCells = 0;
+    gHoldUsed = false;
+    gAdjusts = 0;
+    gLockTimes = [];
+
     drawPreview();   // 立刻刷新「下一个方块」预览
+    drawHold();
   }
 
   /* ---------- 存档：每个模式各存一份，退出/被杀进程后都能继续 ---------- */
@@ -1901,6 +2295,8 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
       queue: queue.slice(0, 3),
       bag: bag.slice(0),
       active: active ? { type: active.type, x: active.x, y: active.y, rot: active.rot } : null,
+      hold: holdType || null,      // 暂存区（只有无重力模式会有值）
+      holdUsed: holdUsed,          // 当前这块是否已经暂存过
       savedAt: Date.now()
     };
   }
@@ -1964,6 +2360,9 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     clearing = null;
     dropAcc = 0; lockAcc = 0; lockResets = 0;
     active = null;
+    // 暂存区（老存档没有这两个字段，按「空的 + 没用过」处理）
+    holdType = (d.hold && ROT[d.hold]) ? d.hold : null;
+    holdUsed = !!d.holdUsed;
     if (d.active && ROT[d.active.type]) {
       const rot = ((d.active.rot | 0) % 4 + 4) % 4;
       const m = ROT[d.active.type][rot];
@@ -1973,6 +2372,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     }
     if (!active) spawn();
     drawPreview();
+    drawHold();
   }
 
   /** 「多久以前」的简短描述 */
@@ -2021,6 +2421,11 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
     resetGameData();
     timerRemain = m.seconds * 1000;
+
+    // 累计「各模式游玩次数」：开始一局就算玩过（成就「多面玩家」）
+    stats.plays[m.key] = (stats.plays[m.key] || 0) + 1;
+    if (MODE_ORDER.every(function (k) { return (stats.plays[k] || 0) > 0; })) unlockAchv('t_modes');
+    saveAchv();
 
     state = 'playing';
     if (savedData) applySaveData(savedData);
@@ -2112,6 +2517,8 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     el.overTitle.className = 'result-title' + (isNewBest ? ' win' : '');
     setText(el.overSub, (mode ? mode.name : '经典无尽') + '模式' + (isNewBest ? ' · 恭喜刷新最高分！' : ''));
     el.rBest.innerHTML = '本模式最高分：<b>' + bestOf(mkey) + '</b>';
+
+    achvOnGameEnd(reason);   // 结算前先把这一局记进累计统计并判定成就
 
     showOverlay('over');
     SFX.over();
@@ -2286,6 +2693,11 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   }
 
   function update(dt) {
+    // ---- 本局游玩时长：只在真正游玩（state==='playing'）时累加，暂停不计 ----
+    gPlayMs += dt;
+    // 无重力模式「静坐修行」：单局游玩满 15 分钟
+    if (mode && mode.key === 'zero' && gPlayMs >= 900000) unlockAchv('z_time');
+
     // ---- 限时模式倒计时：按真实时间累减，暂停时完全不流逝 ----
     if (mode && mode.seconds > 0) {
       timerRemain -= dt;
@@ -2310,28 +2722,32 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     if (!active) { spawn(); return; }
 
     // ---- 自动下落 ----
-    // 轻点 ↓ 的那一格已由 softDropStep() 立即处理；只有按住超过 SOFT_HOLD_DELAY
-    // 才切换成加速下落，避免「点一下就直接冲到底」
-    const interval = dropInterval();
-    const nowTs = nowMs();
-    // 保险：键盘的「按住」状态靠操作系统自动重复维持，若长时间收不到 ↓ 的 keydown
-    // （例如 keyup 被系统吞掉），就自动松开，避免方块一直自动冲到底
-    if (softHeld && softSource === 'key' && nowTs - softKeyTs > SOFT_KEY_WATCHDOG) endSoft();
-    const softActive = softHeld && (nowTs - softHoldStart >= SOFT_HOLD_DELAY);
-    const gi = softActive ? Math.min(SOFT_DROP_MS, interval) : interval;
-    dropAcc += dt;
+    // 无重力模式：方块永远悬停在顶部，没有自动下落、也没有软降，
+    // 只保留「落地锁定延迟」这一段（万一出生点正卡在堆叠上也不会卡住）
+    if (!(mode && mode.noGravity)) {
+      // 轻点 ↓ 的那一格已由 softDropStep() 立即处理；只有按住超过 SOFT_HOLD_DELAY
+      // 才切换成加速下落，避免「点一下就直接冲到底」
+      const interval = dropInterval();
+      const nowTs = nowMs();
+      // 保险：键盘的「按住」状态靠操作系统自动重复维持，若长时间收不到 ↓ 的 keydown
+      // （例如 keyup 被系统吞掉），就自动松开，避免方块一直自动冲到底
+      if (softHeld && softSource === 'key' && nowTs - softKeyTs > SOFT_KEY_WATCHDOG) endSoft();
+      const softActive = softHeld && (nowTs - softHoldStart >= SOFT_HOLD_DELAY);
+      const gi = softActive ? Math.min(SOFT_DROP_MS, interval) : interval;
+      dropAcc += dt;
 
-    let guard = 0;
-    while (dropAcc >= gi && guard < 30) {
-      guard++;
-      dropAcc -= gi;
-      if (canPlace(active.matrix, active.x, active.y + 1)) {
-        active.y++;
-        lockResets = 0;                     // 成功下落一格，重置锁定次数
-        if (softActive) addDropScore(1);    // 软降每格 +1 分
-      } else {
-        dropAcc = 0;
-        break;
+      let guard = 0;
+      while (dropAcc >= gi && guard < 30) {
+        guard++;
+        dropAcc -= gi;
+        if (canPlace(active.matrix, active.x, active.y + 1)) {
+          active.y++;
+          lockResets = 0;                     // 成功下落一格，重置锁定次数
+          if (softActive) { addDropScore(1); achvSoftCell(); }  // 软降每格 +1 分
+        } else {
+          dropAcc = 0;
+          break;
+        }
       }
     }
 
@@ -2390,6 +2806,17 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
         el.btnHomeResume.classList.add('hidden');
       }
     }
+    refreshAchvEntry();   // 成就入口上的「已解锁 x / 总数」
+  }
+
+  /** 按当前模式刷新「模式专属界面」：
+      无重力模式不显示等级格（该模式的速度没有意义）、显示暂存区、隐藏「下落一格」按键 */
+  function applyModeUI() {
+    const zero = !!(mode && mode.noGravity);
+    if (el.mLevelBox) el.mLevelBox.classList.toggle('hidden', zero);
+    if (el.holdBox) el.holdBox.classList.toggle('hidden', !zero);
+    document.body.classList.toggle('zero-mode', zero);
+    if (el.btnHold) el.btnHold.classList.toggle('used', !!holdUsed);
   }
 
   function updateHUD() {
@@ -2406,13 +2833,14 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     setText(el.mState, modeName);
     setText(el.mBest, modeBest);
 
+    applyModeUI();
     refreshModeCards();
     setText(el.mBtnPause, state === 'paused' ? '▶' : '❚❚');
 
     updateTimerUI();
   }
 
-  const ALL_OVERLAYS = ['home', 'mode', 'pause', 'over', 'confirm', 'resume', 'settings', 'update'];
+  const ALL_OVERLAYS = ['home', 'mode', 'pause', 'over', 'confirm', 'resume', 'settings', 'update', 'achv'];
 
   function showOverlay(which) {
     ALL_OVERLAYS.forEach(function (name) {
@@ -2486,9 +2914,12 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
       case 'ArrowUp':    case 'w': case 'W': if (!e.repeat) rotate(1); break;
       case 'z': case 'Z':
       case 'b': case 'B': if (!e.repeat) rotate(-1); break;
+      // C / Shift：暂存（只有无重力模式有暂存，其它模式按下不会有任何反应）
+      case 'c': case 'C': case 'Shift': if (!e.repeat) holdPiece(); break;
       // ↓ / S：轻点精确落一格；按住不放则延时后连续加速下落
       // 系统自动重复的 keydown 用来刷新「仍按着」的心跳，不重复落格
       case 'ArrowDown': case 's': case 'S':
+        if (mode && mode.noGravity) break;   // 无重力模式：不能手动下降
         if (k === 'ArrowDown') softKeyArrowDown = true; else softKeyS = true;
         if (!e.repeat) { softDropStep(); startSoft('key'); }
         else if (softHeld && softSource === 'key') { softKeyTs = nowMs(); }
@@ -2587,6 +3018,41 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   el.btnHomeUpdate.addEventListener('click', openUpdateDialog);
   el.btnSettingsBack.addEventListener('click', function () { showOverlay('home'); refreshHome(); });
   el.btnUpdateClose.addEventListener('click', function () { showOverlay('home'); refreshHome(); });
+
+  // 成就：主页入口 / 返回 / 分页 / 详情
+  el.btnHomeAchv.addEventListener('click', openAchv);
+  el.btnAchvBack.addEventListener('click', function () { showOverlay('home'); refreshHome(); });
+  el.btnAchvDetailClose.addEventListener('click', closeAchvDetail);
+  (function bindAchvTabs() {
+    if (!el.achvTabs) return;
+    const tabs = el.achvTabs.querySelectorAll('.achv-tab');
+    for (let i = 0; i < tabs.length; i++) {
+      tabs[i].addEventListener('click', function () {
+        achvCat = this.getAttribute('data-cat') || 'mode';
+        closeAchvDetail();
+        refreshAchvTabs();
+        renderAchv();
+      });
+    }
+  })();
+
+  // 暂存按钮（无重力模式）：用 pointerdown 立刻响应，并阻止默认行为，
+  // 避免按钮被点过之后抢走焦点，导致按空格（硬降）时又把它触发一次
+  (function bindHoldButton() {
+    const btn = el.btnHold;
+    if (!btn) return;
+    const fire = function (e) {
+      if (e) e.preventDefault();
+      SFX.init(); SFX.resume();
+      holdPiece();
+    };
+    if (window.PointerEvent) {
+      btn.addEventListener('pointerdown', fire);
+    } else {
+      btn.addEventListener('touchstart', fire, { passive: false });
+      btn.addEventListener('mousedown', fire);
+    }
+  })();
 
   // 模式选择
   el.btnModeBack.addEventListener('click', goHome);
@@ -2698,8 +3164,10 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
      左右滑动 = 移动 · 向下滑动并按住 = 加速下落（等同长按 ▼）
      连续下滑两次 = 直接落底 · 点击 / 上滑 = 旋转 */
   const DOUBLE_SWIPE_MS = 450;   // 两次下滑之间的最大间隔，超过就当作新的一次
+  const DOUBLE_TAP_MS = 300;     // 两次轻点之间的最大间隔（无重力模式判「双击暂存」）
   let gesture = null;
   let lastDownSwipeTs = 0;       // 上一次下滑结束的时刻（用于识别连续两次下滑）
+  let lastTapTs = 0;             // 上一次轻点的时刻（用于识别双击暂存）
 
   el.canvas.addEventListener('pointerdown', function (e) {
     if (e.pointerType === 'mouse') return;      // 鼠标用户走键盘，避免误触
@@ -2740,10 +3208,14 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     }
 
     // 向下滑动：第一次 = 加速下落（按住持续加速）；紧接着的第二次 = 直接落底
+    // 无重力模式没有软降，下滑直接就是落底（所以「无重力 + 手势」也只要一下）
     const dy = e.clientY - gesture.startY;
     if (!gesture.softing && !gesture.dropped &&
         dy > 36 && Math.abs(dy) > Math.abs(e.clientX - gesture.startX) * 1.2) {
-      if (Date.now() - lastDownSwipeTs <= DOUBLE_SWIPE_MS) {
+      if (mode && mode.noGravity) {
+        hardDrop();
+        gesture.dropped = true;
+      } else if (Date.now() - lastDownSwipeTs <= DOUBLE_SWIPE_MS) {
         // 连续两次下滑 → 直接落底
         hardDrop();
         lastDownSwipeTs = 0;        // 重置，避免第三次又立刻触发
@@ -2773,12 +3245,319 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     }
     const quick = Date.now() - gesture.time < 260;
     const dist = Math.abs(gesture.lastX - gesture.startX) + Math.abs(gesture.lastY - gesture.startY);
-    // 轻点（几乎没移动）= 顺时针旋转
-    if (!gesture.moved && quick && dist < 16 && state === 'playing') rotate(1);
+    // 轻点（几乎没移动）：
+    //   普通模式 / 无重力模式单击 = 顺时针旋转；
+    //   无重力模式在 300ms 内再点一下（双击）= 暂存方块
+    if (!gesture.moved && quick && dist < 16 && state === 'playing') {
+      if (mode && mode.noGravity) {
+        const now = Date.now();
+        if (now - lastTapTs <= DOUBLE_TAP_MS) { lastTapTs = 0; holdPiece(); }
+        else { lastTapTs = now; rotate(1); }
+      } else {
+        rotate(1);
+      }
+    }
     gesture = null;
   }
   el.canvas.addEventListener('pointerup', endGesture, { passive: false });
   el.canvas.addEventListener('pointercancel', function () { gesture = null; endSoft(); });
+
+  /* =======================================================================
+     十四之二、成就系统（持久化 + 判定 + 界面）
+     ---------------------------------------------------------------------
+     · 41 个成就的条件写在 ACHV 表里，这里只管「什么时候判定」和「怎么显示」；
+     · 成就是永久累计的，存在 tetris.achv.v1，并和存档一样备份到
+       _doc/tetris/save.json —— 热更新、覆盖安装、清缓存都不会丢；
+     · 未解锁的成就在界面上锁着（不可点、也看不到条件）；解锁后金框呼吸，
+       点开即可看到达成条件与解锁时间。
+     ======================================================================= */
+
+  /** 读取成就与累计统计（老版本没有这份数据时就是全空，不影响游戏） */
+  function loadAchv() {
+    let d = null;
+    try { d = JSON.parse(localStorage.getItem(ACHV_KEY) || 'null'); } catch (e) { d = null; }
+    if (d && typeof d === 'object') {
+      if (d.unlocked && typeof d.unlocked === 'object') stats.unlocked = d.unlocked;
+      const s = d.stats;
+      if (s && typeof s === 'object') {
+        stats.games = Math.max(0, s.games | 0);
+        stats.lines = Math.max(0, s.lines | 0);
+        stats.ms = Math.max(0, +s.ms || 0);
+        stats.tetris = Math.max(0, s.tetris | 0);
+        MODE_ORDER.forEach(function (k) {
+          if (s.plays && isFinite(s.plays[k])) stats.plays[k] = Math.max(0, s.plays[k] | 0);
+          if (s.modeLines && isFinite(s.modeLines[k])) stats.modeLines[k] = Math.max(0, s.modeLines[k] | 0);
+        });
+      }
+    }
+    // 成就表改动后，清掉已经不存在的 id，避免脏数据影响计数
+    Object.keys(stats.unlocked).forEach(function (id) {
+      if (!ACHV_BY_ID[id]) delete stats.unlocked[id];
+    });
+  }
+
+  /** 保存成就与累计统计（顺便写一份到 _doc/tetris/save.json） */
+  function saveAchv() {
+    try {
+      localStorage.setItem(ACHV_KEY, JSON.stringify({
+        v: 1,
+        unlocked: stats.unlocked,
+        stats: {
+          games: stats.games, lines: stats.lines, ms: Math.round(stats.ms),
+          tetris: stats.tetris, plays: stats.plays, modeLines: stats.modeLines
+        }
+      }));
+    } catch (e) { /* 隐私模式等场景忽略 */ }
+    backupSave();
+  }
+
+  /** 已解锁的成就数量 */
+  function achvCount() { return Object.keys(stats.unlocked).length; }
+
+  /** 解锁一个成就：记时间 → 存档 → 弹金色提示 → 检查元成就 */
+  function unlockAchv(id) {
+    const def = ACHV_BY_ID[id];
+    if (!def || stats.unlocked[id]) return false;
+    stats.unlocked[id] = Date.now();
+    achvToast(def);
+    SFX.achv();
+    saveAchv();
+    refreshAchvEntry();
+    achvCheckMeta();
+    return true;
+  }
+
+  /** 元成就：拿到 20 个 → 我是高手；除它以外全拿到 → 全成就大师 */
+  function achvCheckMeta() {
+    if (achvCount() >= ACHV_META_20) unlockAchv('t_achv20');
+    let all = true;
+    for (let i = 0; i < ACHV.length; i++) {
+      const a = ACHV[i];
+      if (a.id !== 't_all' && !stats.unlocked[a.id]) { all = false; break; }
+    }
+    if (all) unlockAchv('t_all');
+  }
+
+  /* ---------- 解锁提示：金色横幅，1.5 秒一条，多个同时达成会排队依次弹 ---------- */
+  let achvToastTimer = 0;
+  const achvToastQueue = [];
+  let achvToastBusy = false;
+
+  function achvToast(def) {
+    achvToastQueue.push(def);
+    if (!achvToastBusy) nextAchvToast();
+  }
+  function nextAchvToast() {
+    const def = achvToastQueue.shift();
+    if (!def) { achvToastBusy = false; return; }
+    achvToastBusy = true;
+    const node = el.achvToast;
+    if (!node) { achvToastBusy = false; return; }
+    node.innerHTML = '<b>🏆 成就达成 · ' + def.name + '</b><small>' + def.desc + '</small>';
+    node.classList.remove('hidden');
+    clearTimeout(achvToastTimer);
+    achvToastTimer = setTimeout(function () {
+      node.classList.add('hidden');
+      nextAchvToast();
+    }, 1500);
+  }
+
+  /* ---------- 判定：得分变化（升级倍率、降格加分、硬降加分都会走到这里）---------- */
+  function achvOnScore() {
+    const key = mode ? mode.key : '';
+    if (score >= 1000) unlockAchv('k_1000');
+    // 铁公鸡：到达 10000 分时一次都没用过硬降（达成之后这一局再硬降也不影响）
+    if (score >= 10000 && !gHardDrop) unlockAchv('k_miser');
+    if (key === 'classic' && score > 66666) unlockAchv('c_score');
+    if (key === 'speed' && score > 30000) unlockAchv('s_score');
+    if (key === 'm3') { if (score > 10000) unlockAchv('m3_a'); if (score > 15000) unlockAchv('m3_b'); }
+    if (key === 'm5') { if (score > 20000) unlockAchv('m5_a'); if (score > 25000) unlockAchv('m5_b'); }
+    if (key === 'm10') { if (score > 50000) unlockAchv('m10_a'); if (score > 60000) unlockAchv('m10_b'); }
+  }
+
+  /** 软降下落一格（成就「叠罗汉」） */
+  function achvSoftCell() {
+    gSoftCells++;
+    if (gSoftCells >= 500) unlockAchv('k_soft500');
+  }
+
+  /** 升级时的成就判定 */
+  function achvLevelUp() {
+    const key = mode ? mode.key : '';
+    if (key === 'classic') {
+      if (level >= 20) unlockAchv('c_lv20');
+      if (level >= LEVEL_MAX) unlockAchv('c_max');
+    } else if (key === 'speed' && level >= LEVEL_MAX) {
+      unlockAchv('s_max');
+    }
+  }
+
+  /**
+   * 一次落地之后的成就判定。
+   * 注意：此刻满行还没真正删除（要等消行动画结束），所以棋盘正是「落定那一刻」的状态，
+   * 「死里逃生」需要的高度判断就在这里做。
+   * full = 本次要消掉的行号数组
+   */
+  function achvAfterLock(full) {
+    const n = full.length;
+    const key = mode ? mode.key : '';
+
+    // 最近 20 次落定的时间窗 → 10 秒内放下 10 个 / 20 个方块
+    gLockTimes.push(gPlayMs);
+    if (gLockTimes.length > 20) gLockTimes.shift();
+    const L = gLockTimes.length;
+    if (L >= 10 && gLockTimes[L - 1] - gLockTimes[L - 10] <= 10000) unlockAchv('k_drop10');
+    if (L >= 20 && gLockTimes[L - 1] - gLockTimes[L - 20] <= 10000) unlockAchv('k_drop20');
+
+    if (n > 0) {
+      // 连击：连续多少次消行
+      gCombo++;
+      if (gCombo >= 5) unlockAchv('k_combo5');
+      if (gCombo >= 10) unlockAchv('k_combo10');
+
+      // 满堂彩：1/2/3/4 行消除都出现过
+      gClearTypes[n] = true;
+      if (gClearTypes[1] && gClearTypes[2] && gClearTypes[3] && gClearTypes[4]) unlockAchv('k_alltype');
+
+      if (n === 4) {
+        if (gLastTetris) unlockAchv('k_tetris2');        // 连续两次都是四消
+        gLastTetris = true;
+        stats.tetris++;
+        if (stats.tetris >= 100) unlockAchv('k_tetris100');
+        if (gPlayMs <= 30000) unlockAchv('k_first30');   // 开局 30 秒内四消
+        if (key === 'zero' && !gHoldUsed) unlockAchv('z_nohold');
+        // 死里逃生：打出四消之前，堆叠最高点距顶部只剩 2~5 行
+        if (key === 'classic') {
+          const top = stackTopRow();
+          if (top >= 2 && top <= 5) unlockAchv('c_escape');
+        }
+      } else {
+        gLastTetris = false;                            // 连续四消必须紧挨着，中间夹别的就断
+      }
+
+      // 累计消行（全局 + 各模式，成就「消行收藏家 / 练习狂人」用）
+      if (key) {
+        stats.lines += n;
+        stats.modeLines[key] = (stats.modeLines[key] || 0) + n;
+      }
+      if (key === 'speed' && lines >= 50) unlockAchv('s_lines');
+      if (lines >= 150) unlockAchv('k_lines150');
+      if (stats.lines >= 1000) unlockAchv('t_lines');
+      if ((stats.modeLines.zero || 0) >= 500) unlockAchv('t_zerolines');
+    } else {
+      gCombo = 0;          // 没消行，连击断了
+      gLastTetris = false;
+    }
+
+    achvOnScore();
+  }
+
+  /** 一局结束时的成就判定与累计统计（结束、超时都会走到这里） */
+  function achvOnGameEnd(reason) {
+    const key = mode ? mode.key : '';
+    stats.games++;
+    stats.ms += gPlayMs;
+
+    // 「完整打完一局限时模式」：只有倒计时自然归零才算
+    if (reason === 'time') {
+      if (key === 'm3') unlockAchv('m3_done');
+      else if (key === 'm5') unlockAchv('m5_done');
+      else if (key === 'm10') unlockAchv('m10_done');
+    }
+
+    // 趣味成就：按本地时间判断「凌晨 0~5 点」「周六周日」
+    const d = new Date();
+    const h = d.getHours();
+    if (h >= 0 && h < 5) unlockAchv('t_night');
+    const wd = d.getDay();
+    if (wd === 0 || wd === 6) unlockAchv('t_weekend');
+
+    if (stats.games >= 1000) unlockAchv('t_games');
+    if (stats.ms >= 10 * 3600 * 1000) unlockAchv('t_time');
+
+    saveAchv();
+    achvCheckMeta();
+  }
+
+  /* ---------- 成就界面（全屏：分「模式 / 技巧 / 累计」三页） ---------- */
+  let achvCat = 'mode';
+
+  function fmtDateTime(ts) {
+    const d = new Date(ts || Date.now());
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) +
+      ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  /** 主页成就入口上的「已解锁 x / 总数」 */
+  function refreshAchvEntry() {
+    if (!el.homeAchvSub) return;
+    const got = achvCount();
+    el.homeAchvSub.textContent = '已解锁 ' + got + ' / ' + ACHV_TOTAL +
+      (got >= ACHV_TOTAL ? ' · 全部达成！' : ' · 点这里查看');
+  }
+
+  /** 渲染当前分页的成就卡片（未解锁的用 disabled，点不动） */
+  function renderAchv() {
+    if (!el.achvList) return;
+    const got = achvCount();
+    setText(el.achvCount, '已解锁 ' + got + ' / ' + ACHV_TOTAL);
+    if (el.achvBar) el.achvBar.style.width = Math.round(got / ACHV_TOTAL * 100) + '%';
+
+    let html = '<div class="achv-grid">';
+    ACHV.forEach(function (a) {
+      if (a.cat !== achvCat) return;
+      const on = !!stats.unlocked[a.id];
+      html += '<button class="achv-item ' + (on ? 'unlocked' : 'locked') + '" type="button"' +
+        (on ? ' data-achv="' + a.id + '"' : ' disabled') + '>' +
+        '<span class="ai-ico">' + (on ? '🏆' : '🔒') + '</span>' +
+        '<span class="ai-name">' + a.name + '</span>' +
+        '<span class="ai-tag">' + (on ? '已达成 · 点开看条件' : '未达成') + '</span>' +
+        '</button>';
+    });
+    html += '</div>';
+    el.achvList.innerHTML = html;
+
+    const btns = el.achvList.querySelectorAll('[data-achv]');
+    for (let i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function () {
+        showAchvDetail(this.getAttribute('data-achv'));
+      });
+    }
+  }
+
+  /** 点开一个「已解锁」的成就：显示达成条件与解锁时间 */
+  function showAchvDetail(id) {
+    const a = ACHV_BY_ID[id];
+    if (!a || !stats.unlocked[id]) return;     // 没解锁的不给看
+    setText(el.achvDName, a.name);
+    setText(el.achvDDesc, a.desc);
+    setText(el.achvDTime, '解锁时间：' + fmtDateTime(stats.unlocked[id]));
+    el.achvList.classList.add('hidden');
+    el.achvDetail.classList.remove('hidden');
+  }
+  function closeAchvDetail() {
+    if (!el.achvDetail) return;
+    el.achvDetail.classList.add('hidden');
+    el.achvList.classList.remove('hidden');
+  }
+
+  function refreshAchvTabs() {
+    if (!el.achvTabs) return;
+    const tabs = el.achvTabs.querySelectorAll('.achv-tab');
+    for (let i = 0; i < tabs.length; i++) {
+      tabs[i].classList.toggle('active', tabs[i].getAttribute('data-cat') === achvCat);
+    }
+  }
+
+  /** 打开全屏成就界面 */
+  function openAchv() {
+    achvCat = 'mode';
+    closeAchvDetail();
+    refreshAchvTabs();
+    renderAchv();
+    refreshAchvEntry();
+    showOverlay('achv');
+  }
 
   /* =======================================================================
      十五、本地存储
@@ -2790,7 +3569,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
    * 这里把它迁移到默认模式「经典无尽」，其余模式从 0 开始。
    */
   function loadBests() {
-    const map = { classic: 0, speed: 0, m3: 0, m5: 0, m10: 0 };
+    const map = { classic: 0, speed: 0, zero: 0, m3: 0, m5: 0, m10: 0 };
     try {
       const raw = localStorage.getItem(BEST_KEY);
       if (raw) {
@@ -2845,8 +3624,9 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   const IS_APP_ENV = /Html5Plus|StreamApp/i.test(navigator.userAgent);
   const SAVE_FILE = '_doc/tetris/save.json';
   const SAVE_KEYS = [
-    'tetris.best.v2', 'tetris.best.v1', 'tetris.settings.v1',
-    'tetris.save.classic', 'tetris.save.speed', 'tetris.save.m3', 'tetris.save.m5', 'tetris.save.m10'
+    'tetris.best.v2', 'tetris.best.v1', 'tetris.settings.v1', 'tetris.achv.v1',
+    'tetris.save.classic', 'tetris.save.speed', 'tetris.save.zero',
+    'tetris.save.m3', 'tetris.save.m5', 'tetris.save.m10'
   ];
 
   function hasPlusIO() { return !!(window.plus && plus.io); }
@@ -3146,6 +3926,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   function realInit() {
     loadSettings();
     bestMap = loadBests();
+    loadAchv();                    // 成就与累计统计（永久保存，清档也不会丢）
     SFX.on = settings.sound;
     // 虚拟按键：没设置过就是关闭状态（不再按设备自动开启）
     showTouch = (typeof settings.touch === 'boolean') ? settings.touch : false;

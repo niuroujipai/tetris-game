@@ -1,6 +1,6 @@
 {
-  "version": 8.4,
+  "version": 8.5,
   "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
-  "size": 131481,
-  "note": "速度曲线 12 级起每级快 10%，30 级满级（约 40ms）；满级 UI 变金色"
+  "size": 170761,
+  "note": "新增无重力模式（可暂存方块）与成就系统（41 个成就，主页可查看）"
 }
