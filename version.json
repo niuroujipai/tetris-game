@@ -1,6 +1,6 @@
 {
-  "version": 8.3,
+  "version": 8.4,
   "url": "https://cdn.jsdelivr.net/gh/niuroujipai/tetris-game/game.html",
-  "size": 129888,
-  "note": "速度曲线三段式 + 手机按键延迟降低"
+  "size": 131481,
+  "note": "速度曲线 12 级起每级快 10%，30 级满级（约 40ms）；满级 UI 变金色"
 }

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b16" />
 <!-- App 资源版本号：每发布一次新版本把它 +1（发布流程见 HBuilder打包/使用说明.md）
      启动壳与 App 内更新都靠这个标记判断新旧，平时只需改这一处 -->
-<meta name="app-version" content="8.3" />
+<meta name="app-version" content="8.4" />
 <title>俄罗斯方块 · 高端版</title>
 <style>
 /* =========================================================================
@@ -227,6 +227,14 @@ body.mobile .hud-mobile{
 }
 .sp-stat.sp-timer b{ color:var(--accent); }
 .sp-stat.sp-timer.warn b{ color:#ff9a9a; }
+/* 满级：等级格子变金色 */
+.sp-stat.maxed{
+  border-color:rgba(250,204,21,.75);
+  background:linear-gradient(150deg, rgba(250,204,21,.22), rgba(250,204,21,.06));
+  box-shadow:0 0 14px rgba(250,204,21,.35);
+}
+.sp-stat.maxed span{ color:var(--gold); }
+.sp-stat.maxed b{ color:var(--gold); text-shadow:0 0 10px rgba(250,204,21,.6); }
 .icon-btn{
   width:34px; height:34px; border-radius:10px; font-size:15px;
   border:1px solid var(--panel-line); background:rgba(255,255,255,.05);
@@ -794,7 +802,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
         <div class="sp-stats">
           <div class="sp-stat"><span>得分</span><b id="mScore">0</b></div>
           <div class="sp-stat"><span>消除行数</span><b id="mLines">0</b></div>
-          <div class="sp-stat"><span>等级</span><b id="mLevel">1</b></div>
+          <div class="sp-stat" id="mLevelBox"><span>等级</span><b id="mLevel">1</b></div>
           <div class="sp-stat sp-timer" id="mTimerBox"><span>倒计时</span><b id="mTimer">∞</b></div>
         </div>
         <span class="sp-label">NEXT</span>
@@ -859,9 +867,10 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   const SOFT_HOLD_DELAY = 180;  // 按下 ↓ 后先精确落 1 格，按住超过该时长才进入连续软降
   const SOFT_KEY_WATCHDOG = 1200; // 键盘软降的保险时长：超过这么久没收到 ↓ 的 keydown 就自动松开
 
-  const DROP_STEP_MS = 70;        // 前期：每级固定减少 70ms（绝对差值，最初的手感）
-  const DROP_STEP_RATIO = 0.19;   // 中期：每级至少保证 19% 的加速比例（恒定百分比，无断崖）
-  const DROP_TAIL_MS = 30;        // 尾部：越接近这个间隔，步长越小，平滑逼近而不是硬停
+  const LEVEL_MAX = 30;           // 满级等级（所有模式共用），到顶后等级与速度都不再增长
+  const TOTAL_STEP_MS = 70;       // 前 11 级：每级固定 −70ms（1000 → 300ms，和最初手感一致）
+  const LATE_RATIO = 0.9;         // 12 级起：每级速度 ×0.9（即快 10%），30 级时约 40ms
+  const SPEED_TAIL_MS = 1;        // 极速模式超过等效 30 级后，每级只再快 1ms（到 30 级约 30ms）
 
   const LINES_PER_LEVEL = 10;   // 每消除 10 行升 1 级
   const SCORE_TABLE = { 1: 100, 2: 300, 3: 500, 4: 800 }; // 标准街机消行分
@@ -889,6 +898,14 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
      设置页会把它展示给玩家，更新弹窗里也会显示对应版本的第一条。
      ----------------------------------------------------------------------- */
   const CHANGELOG = [
+    {
+      v: '8.4',
+      items: [
+        '速度曲线重做：11 级前每级 −70ms（和原来完全一样），12 级起每级固定快 10%，30 级满级时约 40ms',
+        '新增满级机制：等级最高 30 级，满级后「等级」格子变金色并显示「满级」，速度不再增加',
+        '极速模式满级更苛刻：显示 20 级时相当于普通满级速度（40ms），之后每级只再快 1ms，要打到 30 级（300 行）才满级，那时约 30ms'
+      ]
+    },
     {
       v: '8.3',
       items: [
@@ -1189,6 +1206,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     // 设置页
     btnSettingsBack: $('btnSettingsBack'),
     setVer: $('setVer'), setUpdState: $('setUpdState'), noticeList: $('noticeList'),
+    mLevelBox: $('mLevelBox'),
 
     // 检查更新页
     updTitle: $('updTitle'), updSub: $('updSub'), updInfo: $('updInfo'),
@@ -1557,21 +1575,25 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
   }
 
   /**
-   * 当前等级对应的自动下落间隔（三段式，衔接处天然无缝）：
-   *   前期：每级固定 −70ms（1000ms → 370ms，共 10 级，和最初的手感完全一致）
-   *   中期：每级固定加速 19%（370ms → 40ms 左右，不再出现「突然变快」的断崖）
-   *   尾部：步长自动变小，平滑逼近 30ms（不硬停，越往后越接近极限）
-   * 实现：每级取「70ms / 当前间隔的 19% / 距尾部 30ms 的余量」三者中最小的那个作为步长。
-   * 极速模式通过 speedOffset 整体前移等效等级：等级 1 → 等效 11 级 → 300ms。
+   * 当前等级对应的自动下落间隔（分段曲线）：
+   *   1~11 级：每级固定 −70ms，1000 → 300ms（和最初的手感完全一致，一点都不改）
+   *   12 级起：每级速度 ×0.9（快 10%），到 30 级满级时约 40.5ms
+   *   等效 30 级之后（只有极速模式会走到）：每级只再快 1ms，30 级满级时约 30.5ms
+   * 极速模式通过 speedOffset 整体前移等效等级：显示 1 级 = 等效 11 级 = 300ms，
+   * 所以它显示 20 级时等于普通模式 30 级（40.5ms），要到显示 30 级才满级（约 30.5ms）。
    */
   function dropInterval() {
     const offset = (mode && mode.speedOffset) ? mode.speedOffset : 0;
     const eff = level - 1 + offset;          // 等效等级（从 0 起算）
-    let interval = 1000;
-    for (let i = 0; i < eff; i++) {
-      interval -= Math.min(DROP_STEP_MS, interval * DROP_STEP_RATIO, interval - DROP_TAIL_MS);
+    let interval;
+    if (eff <= 10) {
+      interval = 1000 - eff * TOTAL_STEP_MS;                       // 1000 → 300ms
+    } else if (eff <= 29) {
+      interval = 300 * Math.pow(LATE_RATIO, eff - 10);             // 每级快 10%
+    } else {
+      interval = 300 * Math.pow(LATE_RATIO, 19) - (eff - 29) * SPEED_TAIL_MS;  // 极速模式后段
     }
-    return interval;
+    return Math.max(10, interval);
   }
 
   /** 等级倍率：等级越高分数有轻微加成 */
@@ -1797,10 +1819,11 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
       addLineScore(SCORE_TABLE[full.length] || 800);
       lines += full.length;
 
-      const newLevel = Math.floor(lines / LINES_PER_LEVEL) + 1;
+      // 等级：每 10 行一级，最高到满级 LEVEL_MAX（到顶后不再涨，速度也不再变）
+      const newLevel = Math.min(LEVEL_MAX, Math.floor(lines / LINES_PER_LEVEL) + 1);
       if (newLevel > level) {
         level = newLevel;
-        SFX.levelup();
+        SFX.levelup();     // 满级那一次也会响，之后 newLevel 不再变大
       }
       SFX.clear(full.length);
       clearing = { rows: full, t: 0 };   // 进入消行闪烁动画
@@ -2084,7 +2107,7 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
     // 填充结算面板：本局得分、消除行数、评级（到达等级）
     setText(el.rScore, finalScore);
     setText(el.rLines, lines);
-    setText(el.rRating, 'Lv.' + level);
+    setText(el.rRating, level >= LEVEL_MAX ? '满级' : 'Lv.' + level);
     setText(el.overTitle, reason === 'time' ? '时间到 · 本局结束' : '方块溢出 · 游戏结束');
     el.overTitle.className = 'result-title' + (isNewBest ? ' win' : '');
     setText(el.overSub, (mode ? mode.name : '经典无尽') + '模式' + (isNewBest ? ' · 恭喜刷新最高分！' : ''));
@@ -2376,7 +2399,10 @@ body.mobile .icon-btn{ width:32px; height:32px; font-size:14px; border-radius:9p
 
     setText(el.mScore, score);
     setText(el.mLines, lines);
-    setText(el.mLevel, level);
+    // 满级：等级格子变金色并显示「满级」
+    const maxed = level >= LEVEL_MAX;
+    setText(el.mLevel, maxed ? '满级' : level);
+    if (el.mLevelBox) el.mLevelBox.classList.toggle('maxed', maxed);
     setText(el.mState, modeName);
     setText(el.mBest, modeBest);
 
